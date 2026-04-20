@@ -35,7 +35,7 @@
 
 ---
 
-### copaw — Infra & Skill 负责人 (新加入!)
+### copaw — Infra & Skill 负责人
 
 **你的领域**:
 - Milestone 3.5: Async Infrastructure (Week 3-4)
@@ -50,6 +50,24 @@
 - Day 5: 测试 + Review + 下周计划
 
 **详细任务**: [copaw_sprint1_brief.md](./copaw_sprint1_brief.md)
+
+---
+
+### claude — QA & Testing 负责人 (新加入!)
+
+**你的领域**:
+- 测试框架 & CI/CD (Week 1-2)
+- Quality Assurance Pipeline
+- Performance Testing
+
+**本周任务**:
+- Day 1: 项目熟悉 + 测试框架搭建
+- Day 2: 核心模块单元测试 (DAG, FSM, Store)
+- Day 3: 集成测试 + Mock 服务
+- Day 4: CI/CD + 性能测试
+- Day 5: 测试报告 + Code Review + 文档
+
+**详细任务**: [claude_sprint1_brief.md](./claude_sprint1_brief.md)
 
 ---
 
@@ -80,6 +98,14 @@
 - ✅ ADR-001 技术选型决策
 - ✅ Redis 环境运行
 - ✅ JobQueue 骨架实现
+
+### claude: 建立 Testing Framework
+**成功标准**:
+- ✅ 测试框架搭建 (pytest + coverage)
+- ✅ 核心模块单元测试 (>80% 覆盖)
+- ✅ CI/CD 测试流水线
+- ✅ 集成测试方案设计
+- ✅ 测试报告生成
 
 ---
 
@@ -174,7 +200,8 @@
 ```
 main (保护分支)
 ├── feature/sprint1-agent-scope (hermes)
-└── feature/sprint1-async-infra (copaw)
+├── feature/sprint1-async-infra (copaw)
+└── feature/sprint1-testing (claude)
 ```
 
 ### 提交流程
@@ -241,6 +268,14 @@ scope:
 - [ ] Job Schema 定义
 - [ ] Redis 环境运行
 - [ ] JobQueue 骨架实现
+
+### claude
+- [ ] 测试框架搭建完成
+- [ ] DAG/FSM/Store 单元测试
+- [ ] 核心模块覆盖率 >80%
+- [ ] CI/CD 运行成功
+- [ ] 测试报告生成
+- [ ] Code Review 反馈
 
 ### 团队协作
 - [ ] Interface Alignment 会议完成

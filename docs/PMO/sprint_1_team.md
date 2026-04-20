@@ -1,10 +1,11 @@
-# Sprint 1: Team Plan (hermes + copaw)
+# Sprint 1: Team Plan (hermes + copaw + claude)
 
-> **Sprint**: 1 (2026-04-20 ~ 2026-04-27)  
-> **Goal**: 
-> - hermes: Validate AgentScope Integration & NL→DAG Intent Parsing  
-> - copaw: Design Async Infrastructure Architecture & Kickoff Implementation  
-> **Team**: hermes (Agent/Gateway), copaw (Infra/Skill), PM (AI Assistant)
+> **Sprint**: 1 (2026-04-20 ~ 2026-04-27)
+> **Goal**:
+> - hermes: Validate AgentScope Integration & NL→DAG Intent Parsing
+> - copaw: Design Async Infrastructure Architecture & Kickoff Implementation
+> - claude: Establish Testing Framework & Quality Assurance Pipeline
+> **Team**: hermes (Agent/Gateway), copaw (Infra/Skill), claude (QA/Testing), PM (AI Assistant)
 
 ---
 
@@ -22,15 +23,23 @@ hermes (Agent & Gateway Track)
 └── Day 5: Integration + Testing
     └── Deliverable: Agent ↔ Engine 集成完成
 
-copaw (Infra & Skill Track)  
+copaw (Infra & Skill Track)
 ├── Day 1-2: 项目熟悉 + 架构设计
 ├── Day 3-4: Job Queue 设计文档
 └── Day 5: 开始实现 Redis + RQ
     └── Deliverable: Async Infra 架构文档 + Job Queue 骨架
 
+claude (QA & Testing Track)
+├── Day 1: 项目熟悉 + 测试框架搭建
+├── Day 2: 核心模块单元测试 (DAG, FSM, Store)
+├── Day 3: 集成测试 + Mock 服务
+├── Day 4: CI/CD + 性能测试
+└── Day 5: 测试报告 + Code Review
+    └── Deliverable: 测试框架 + 覆盖率报告
+
 PM (协调)
 ├── Day 1-2: Prompt 设计 + 测试用例
-├── Day 3: 支持两人技术问题
+├── Day 3: 支持三人技术问题
 ├── Day 4: Code Review 准备
 └── Day 5: Go/No-Go 决策
 
@@ -39,6 +48,8 @@ PM (协调)
 │   └── Topic: Engine → Async Queue 接口定义
 ├── Day 4: 技术 Review
 │   └── Topic: 架构评审 + 代码 Review
+├── Day 4: Code Review (claude 主导)
+│   └── Topic: hermes & copaw 代码可测性 Review
 └── Day 5: Sprint Review
     └── Topic: Demo + 决策 + Retrospective
 ```
@@ -62,6 +73,14 @@ PM (协调)
 - ✅ 确定 Job Queue 技术选型 (ADR-001)
 - ✅ Redis + RQ 环境搭建
 - ✅ Job Queue 骨架代码 (定义接口)
+
+### claude 目标
+**建立 CineMate 的测试框架和质量保障体系**
+- ✅ 熟悉 CineMate 项目架构
+- ✅ 测试框架搭建 (pytest + coverage)
+- ✅ 为核心模块补充单元测试 (>80% 覆盖)
+- ✅ 建立 CI/CD 测试流水线
+- ✅ 设计集成测试方案
 
 ---
 
@@ -88,6 +107,11 @@ PM (协调)
 - [ ] C1-001: 阅读项目文档 (2h)
 - [ ] C1-002: 审查 M1 Engine 代码 (3h)
 - [ ] C1-003: 理解 DAG 执行流程 (2h)
+
+**claude 任务**:
+- [ ] CL1-001: 阅读项目文档 (2h)
+- [ ] CL1-002: 审查现有测试代码 (2h)
+- [ ] CL1-003: 搭建测试框架 (3h)
 
 ---
 
@@ -224,7 +248,8 @@ PM (协调)
 ```
 main (保护分支)
 ├── feature/sprint1-agent-scope (hermes)
-└── feature/sprint1-async-infra (copaw)
+├── feature/sprint1-async-infra (copaw)
+└── feature/sprint1-testing (claude)
 ```
 
 ### Git Workflow
@@ -240,13 +265,20 @@ $ git checkout -b feature/sprint1-async-infra
 $ git commit -m "feat(infra): add JobQueue skeleton"
 $ git push origin feature/sprint1-async-infra
 # 周五创建 PR
+
+# claude
+$ git checkout -b feature/sprint1-testing
+$ git commit -m "test(dag): add comprehensive DAG tests"
+$ git push origin feature/sprint1-testing
+# 周五创建 PR
 ```
 
 ### Code Review 流程
 1. **Self Review**: 提交前自己检查
-2. **Peer Review**: 
-   - hermes 的代码 → copaw Review
-   - copaw 的代码 → hermes Review
+2. **Peer Review**:
+   - hermes 的代码 → copaw Review (功能), claude Review (可测性)
+   - copaw 的代码 → hermes Review (接口), claude Review (可测性)
+   - claude 的代码 → hermes Review (集成), copaw Review (性能)
 3. **PM Review**: PM 最终审批
 4. **Merge**: PM 合并到 main
 
@@ -256,7 +288,7 @@ $ git push origin feature/sprint1-async-infra
 
 ### 格式
 ```markdown
-**Name**: hermes / copaw
+**Name**: hermes / copaw / claude
 **Date**: 2026-04-XX
 **Yesterday**: (昨天完成了什么)
 **Today**: (今天计划做什么)
@@ -283,6 +315,9 @@ $ git push origin feature/sprint1-async-infra
 | S1-R3 | Async 设计复杂度过高 | copaw | Day 2 接口对齐会议简化 |
 | S1-R4 | 两人进度不匹配 | PM | 每日 Standup 跟踪，必要时调整 |
 | S1-R5 | Redis 环境搭建失败 | copaw | 使用 Docker，备选 SQLite Queue |
+| S1-R6 | 测试框架配置问题 | claude | Day 1 解决，备选 unittest |
+| S1-R7 | 模块依赖复杂难以 Mock | claude/hermes | 简化接口，使用依赖注入 |
+| S1-R8 | 三人进度协调 | PM | 每日 Standup，必要时调整 |
 
 ---
 
@@ -303,6 +338,14 @@ $ git push origin feature/sprint1-async-infra
 - [ ] Redis 环境运行
 - [ ] JobQueue 骨架实现
 - [ ] 基础接口定义文档
+
+### claude 验收
+- [ ] 测试框架搭建完成
+- [ ] DAG/FSM/Store 单元测试 (>80% 覆盖)
+- [ ] CI/CD 测试流水线运行
+- [ ] 集成测试方案设计
+- [ ] 测试报告生成
+- [ ] Code Review 反馈
 
 ---
 
