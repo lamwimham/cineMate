@@ -357,3 +357,35 @@ def intent_test_cases():
         with open(test_file) as f:
             return json.load(f)
     return {"cases": []}
+
+
+# =============================================================================
+# Mock Upstream Fixtures
+# =============================================================================
+
+@pytest.fixture
+def mock_kling():
+    """Provide Mock Kling API client."""
+    from tests.mocks.upstream import MockKlingClient
+    return MockKlingClient()
+
+
+@pytest.fixture
+def mock_runway():
+    """Provide Mock Runway API client."""
+    from tests.mocks.upstream import MockRunwayClient
+    return MockRunwayClient()
+
+
+@pytest.fixture
+def mock_openai():
+    """Provide Mock OpenAI API client."""
+    from tests.mocks.upstream import MockOpenAIClient
+    return MockOpenAIClient()
+
+
+@pytest.fixture
+def mock_factory():
+    """Provide Mock Upstream Factory."""
+    from tests.mocks.upstream import MockUpstreamFactory
+    return MockUpstreamFactory
