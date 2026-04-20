@@ -23,3 +23,10 @@ Thumbs.db
 # Temp
 *.db
 *.sqlite3
+
+# Testing
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+*.pytest_cache
