@@ -11,14 +11,18 @@
 
 ## 🎯 Vision
 
-CineMate is an **AI Video Production Operating System** that brings software engineering practices to video creation. Unlike "one-click" black-box tools or complex node-based editors, CineMate is:
+**To democratize filmmaking by safeguarding creative vision and empowering storytellers to produce at scale—ensuring technology amplifies artistry, never supersedes it.**
 
-- **Agent-Driven**: A Director Agent interprets natural language and orchestrates the entire pipeline
-- **Version Controlled**: Git-like versioning for video assets ("Video Git")
-- **Incremental**: Only re-render changed nodes using Dirty Propagation
-- **Cloud-Native**: Local-first execution with cloud-brain orchestration
+CineMate is an **AI Video Production Operating System** that brings software engineering practices to video creation. We believe the future of filmmaking lies not in replacing human creativity with automation, but in **amplifying creative potential through intelligent tooling**.
 
-> "Manage video creation like you manage code."
+Unlike "one-click" black-box tools that obscure the creative process or complex node-based editors that require technical expertise, CineMate is:
+
+- **Agent-Driven**: A Director Agent interprets natural language and orchestrates the entire pipeline—translating vision to execution while preserving creative intent
+- **Version Controlled**: Git-like versioning for video assets ("Video Git")—empowering experimentation without fear of losing work
+- **Incremental**: Only re-render changed nodes using Dirty Propagation—respecting both creative time and computational resources
+- **Cloud-Native**: Local-first execution with cloud-brain orchestration—giving creators full ownership of their assets
+
+> "Technology should serve the story, not dictate it. Manage video creation like you manage code—but keep the soul of filmmaking intact."
 
 ---
 
