@@ -1,0 +1,224 @@
+{
+  "test_suite": "Intent Parsing Test Cases",
+  "version": "1.0.0",
+  "total_cases": 20,
+  "categories": {
+    "simple": 8,
+    "medium": 8,
+    "complex": 4
+  },
+  "cases": [
+    {
+      "id": "S-001",
+      "category": "simple",
+      "input": "创建一个赛博朋克风格的短视频",
+      "expected_intent": "Generate a cyberpunk-themed short video",
+      "expected_nodes_count": 2,
+      "expected_node_types": ["text_to_image", "image_to_video"],
+      "notes": "Basic text-to-video with style"
+    },
+    {
+      "id": "S-002",
+      "category": "simple",
+      "input": "Generate a cyberpunk video",
+      "expected_intent": "Generate a cyberpunk-themed video",
+      "expected_nodes_count": 2,
+      "expected_node_types": ["text_to_image", "image_to_video"],
+      "notes": "English version of S-001"
+    },
+    {
+      "id": "S-003",
+      "category": "simple",
+      "input": "把这张照片动起来",
+      "expected_intent": "Animate a photo",
+      "expected_nodes_count": 1,
+      "expected_node_types": ["image_to_video"],
+      "notes": "Image-to-video only"
+    },
+    {
+      "id": "S-004",
+      "category": "simple",
+      "input": "制作一个产品展示视频",
+      "expected_intent": "Create a product showcase video",
+      "expected_nodes_count": 2,
+      "expected_node_types": ["text_to_image", "image_to_video"],
+      "notes": "Product showcase basic"
+    },
+    {
+      "id": "S-005",
+      "category": "simple",
+      "input": "Create a cinematic video with film grain",
+      "expected_intent": "Create cinematic video with film grain effect",
+      "expected_nodes_count": 3,
+      "expected_node_types": ["text_to_image", "image_to_video", "color_grade"],
+      "notes": "With post-processing"
+    },
+    {
+      "id": "S-006",
+      "category": "simple",
+      "input": "做一个 TikTok 风格的竖屏视频",
+      "expected_intent": "Create a vertical video for TikTok",
+      "expected_nodes_count": 2,
+      "expected_node_types": ["text_to_image", "image_to_video"],
+      "expected_params": {
+        "aspect_ratio": "9:16"
+      },
+      "notes": "Platform-specific format"
+    },
+    {
+      "id": "S-007",
+      "category": "simple",
+      "input": "Animate this photo with slow zoom in",
+      "expected_intent": "Animate photo with slow zoom in effect",
+      "expected_nodes_count": 1,
+      "expected_node_types": ["image_to_video"],
+      "expected_params": {
+        "camera_movement": "zoom_in"
+      },
+      "notes": "Specific camera movement"
+    },
+    {
+      "id": "S-008",
+      "category": "simple",
+      "input": "Create a 5-second logo animation",
+      "expected_intent": "Create 5-second logo animation",
+      "expected_nodes_count": 2,
+      "expected_node_types": ["text_to_image", "image_to_video"],
+      "expected_params": {
+        "duration": 5
+      },
+      "notes": "Specific duration"
+    },
+    {
+      "id": "M-001",
+      "category": "medium",
+      "input": "制作一个 10 秒的产品展示视频，先展示产品全貌，然后特写功能",
+      "expected_intent": "Create 10-second product showcase with wide shot and detail close-up",
+      "expected_nodes_count": 5,
+      "expected_node_types": ["text_to_image", "text_to_image", "image_to_video", "image_to_video", "video_concat"],
+      "notes": "Two shots concatenated"
+    },
+    {
+      "id": "M-002",
+      "category": "medium",
+      "input": "Create a video with background music and subtitles",
+      "expected_intent": "Create video with BGM and subtitles",
+      "expected_nodes_count": 4,
+      "expected_node_types": ["text_to_image", "image_to_video", "audio_add", "subtitle_add"],
+      "notes": "Audio and text overlay"
+    },
+    {
+      "id": "M-003",
+      "category": "medium",
+      "input": "做一个王家卫风格的短片，要有慢动作和霓虹灯",
+      "expected_intent": "Create Wong Kar-wai style short with slow motion and neon",
+      "expected_nodes_count": 3,
+      "expected_node_types": ["text_to_image", "image_to_video", "color_grade"],
+      "expected_params": {
+        "frame_rate": 24,
+        "motion_blur": 0.3
+      },
+      "notes": "Style-specific parameters"
+    },
+    {
+      "id": "M-004",
+      "category": "medium",
+      "input": "Create a before/after comparison video showing transformation",
+      "expected_intent": "Create before/after comparison video",
+      "expected_nodes_count": 4,
+      "expected_node_types": ["text_to_image", "text_to_image", "image_to_video", "video_concat"],
+      "notes": "Split-screen or sequential comparison"
+    },
+    {
+      "id": "M-005",
+      "category": "medium",
+      "input": "制作一个 3 场景的叙事视频：开场、冲突、结局",
+      "expected_intent": "Create 3-scene narrative video: opening, conflict, resolution",
+      "expected_nodes_count": 7,
+      "expected_node_types": ["text_to_image", "image_to_video", "text_to_image", "image_to_video", "text_to_image", "image_to_video", "video_concat"],
+      "notes": "Multi-scene storytelling"
+    },
+    {
+      "id": "M-006",
+      "category": "medium",
+      "input": "Create a video with smooth transitions between 4 different scenes",
+      "expected_intent": "Create video with smooth transitions between 4 scenes",
+      "expected_nodes_count": 8,
+      "expected_node_types": ["text_to_image", "image_to_video", "text_to_image", "image_to_video", "text_to_image", "image_to_video", "text_to_image", "video_concat"],
+      "notes": "Multiple transitions"
+    },
+    {
+      "id": "M-007",
+      "category": "medium",
+      "input": "做一个社交媒体广告，先吸引眼球然后展示产品最后 CTA",
+      "expected_intent": "Create social media ad: hook, product, CTA",
+      "expected_nodes_count": 6,
+      "expected_node_types": ["text_to_image", "image_to_video", "text_to_image", "image_to_video", "text_to_image", "video_concat"],
+      "notes": "Marketing funnel structure"
+    },
+    {
+      "id": "M-008",
+      "category": "medium",
+      "input": "Create a cinematic trailer with dramatic music and title cards",
+      "expected_intent": "Create cinematic trailer with music and titles",
+      "expected_nodes_count": 6,
+      "expected_node_types": ["text_to_image", "image_to_video", "audio_add", "subtitle_add", "video_concat"],
+      "notes": "Trailer format"
+    },
+    {
+      "id": "C-001",
+      "category": "complex",
+      "input": "制作一个完整的品牌故事视频：公司历史、产品展示、客户评价、未来愿景，每个部分 5 秒，带背景音乐和品牌色",
+      "expected_intent": "Create complete brand story video with 4 sections, BGM, brand colors",
+      "expected_nodes_count": 12,
+      "expected_node_types": ["text_to_image", "image_to_video", "text_to_image", "image_to_video", "text_to_image", "image_to_video", "text_to_image", "image_to_video", "video_concat", "audio_add", "color_grade"],
+      "notes": "Complex multi-section video"
+    },
+    {
+      "id": "C-002",
+      "category": "complex",
+      "input": "Create a Wong Kar-wai inspired short film: opening scene in a diner, middle scene in rain with neon, ending scene at train station, all connected with smooth transitions, 30 seconds total",
+      "expected_intent": "Create Wong Kar-wai style short film with 3 connected scenes, 30 seconds",
+      "expected_nodes_count": 10,
+      "expected_node_types": ["text_to_image", "image_to_video", "text_to_image", "image_to_video", "text_to_image", "image_to_video", "video_concat", "color_grade", "audio_add"],
+      "expected_params": {
+        "style": "wong_kar_wai",
+        "total_duration": 30
+      },
+      "notes": "Complex artistic video with style consistency"
+    },
+    {
+      "id": "C-003",
+      "category": "complex",
+      "input": "做一个 A/B 测试视频集：同一个产品用两种不同风格展示，赛博朋克 vs 极简主义，每个 10 秒，可以对比",
+      "expected_intent": "Create A/B test video set: cyberpunk vs minimalism, comparable",
+      "expected_nodes_count": 11,
+      "expected_node_types": ["text_to_image", "image_to_video", "color_grade", "text_to_image", "image_to_video", "color_grade", "video_concat"],
+      "notes": "A/B testing format"
+    },
+    {
+      "id": "C-004",
+      "category": "complex",
+      "input": "Create a personalized video campaign: generate 5 variations of a product video with different color schemes (warm, cool, vibrant, monochrome, pastel), each 8 seconds, with consistent product positioning",
+      "expected_intent": "Create 5 personalized video variations with different color schemes",
+      "expected_nodes_count": 15,
+      "expected_node_types": ["text_to_image", "image_to_video", "color_grade", "text_to_image", "image_to_video", "color_grade"],
+      "notes": "Batch generation with variations"
+    }
+  ],
+  "evaluation_criteria": {
+    "intent_accuracy": "Does the parsed intent match the user's request?",
+    "node_completeness": "Are all necessary nodes included?",
+    "node_correctness": "Are node types appropriate for the task?",
+    "dependency_correctness": "Are node dependencies correctly specified?",
+    "params_appropriateness": "Are parameters sensible and complete?",
+    "json_validity": "Is the output valid JSON?"
+  },
+  "scoring": {
+    "perfect": 100,
+    "minor_issues": 80,
+    "major_issues": 60,
+    "incorrect": 40,
+    "failed": 0
+  }
+}
