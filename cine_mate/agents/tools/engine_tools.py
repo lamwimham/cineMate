@@ -99,6 +99,45 @@ class EngineTools:
         result = {"runs": ["list", "of", "run_ids"]}
         return ToolResponse(content=[{"type": "text", "text": json.dumps(result, indent=2)}])
 
+    async def submit_plan(self, plan_json: str) -> ToolResponse:
+        """
+        Submit a full video production plan (DAG) for execution.
+        
+        Args:
+            plan_json: JSON string representing the DAG structure.
+                       Must contain "nodes" list with "id", "type", "inputs", "params".
+        """
+        try:
+            plan = json.loads(plan_json)
+            
+            # Validation logic (MVP)
+            if "nodes" not in plan or not isinstance(plan["nodes"], list):
+                raise ValueError("Plan must contain a 'nodes' list.")
+            
+            # In MVP, we create a run and log the plan
+            run_id = f"run_plan_{asyncio.get_event_loop().time():.0f}"
+            
+            run = PipelineRun(
+                run_id=run_id,
+                commit_msg=plan.get("intent", "Plan submission"),
+                status=RunStatus.PENDING
+            )
+            await self.store.create_run(run)
+            
+            # We would trigger the Orchestrator here in a full implementation
+            
+            result = {
+                "status": "accepted",
+                "run_id": run_id,
+                "node_count": len(plan["nodes"]),
+                "message": "Plan submitted to engine queue."
+            }
+            return ToolResponse(content=[{"type": "text", "text": json.dumps(result, indent=2)}])
+        except json.JSONDecodeError as e:
+            return ToolResponse(content=[{"type": "text", "text": json.dumps({"error": f"Invalid JSON: {e}"})}])
+        except Exception as e:
+            return ToolResponse(content=[{"type": "text", "text": json.dumps({"error": str(e)})}])
+
 
 def register_engine_tools(toolkit: Toolkit, store_path: str = "./cinemate.db") -> EngineTools:
     """
