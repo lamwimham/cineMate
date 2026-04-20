@@ -217,11 +217,13 @@ def _video_edit(params: Dict[str, Any]) -> Dict[str, Any]:
 if __name__ == "__main__":
     # Run worker directly (for development)
     import os
-    from rq import Connection, Queue, Worker
+    from rq import Queue, Worker
+    import redis
     
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     print(f"Starting worker with Redis: {redis_url}")
     
-    with Connection(redis.from_url(redis_url)):
-        worker = Worker(["default"])
-        worker.work()
+    # RQ 2.x: No need for Connection context manager
+    redis_client = redis.from_url(redis_url)
+    worker = Worker(["default"], connection=redis_client)
+    worker.work()
