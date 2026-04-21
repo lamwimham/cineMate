@@ -20,23 +20,25 @@ from unittest.mock import Mock, AsyncMock, patch, MagicMock
 class TestMockChatModel:
     """Test MockChatModel for testing without API keys."""
 
-    def test_mock_model_returns_json_response(self):
+    @pytest.mark.asyncio
+    async def test_mock_model_returns_json_response(self):
         """MockChatModel returns JSON DAG plan."""
         from cine_mate.agents.director_agent import MockChatModel
 
         mock_model = MockChatModel()
-        response = mock_model()
+        response = await mock_model()
 
         assert response is not None
         assert hasattr(response, 'content')
         assert len(response.content) > 0
 
-    def test_mock_response_contains_nodes(self):
+    @pytest.mark.asyncio
+    async def test_mock_response_contains_nodes(self):
         """Mock response contains DAG nodes."""
         from cine_mate.agents.director_agent import MockChatModel
 
         mock_model = MockChatModel()
-        response = mock_model()
+        response = await mock_model()
 
         text = response.content[0]["text"]
         data = json.loads(text)
@@ -44,12 +46,13 @@ class TestMockChatModel:
         assert "nodes" in data
         assert len(data["nodes"]) == 3  # script, image, video
 
-    def test_mock_nodes_have_correct_types(self):
+    @pytest.mark.asyncio
+    async def test_mock_nodes_have_correct_types(self):
         """Mock nodes have correct types."""
         from cine_mate.agents.director_agent import MockChatModel
 
         mock_model = MockChatModel()
-        response = mock_model()
+        response = await mock_model()
 
         text = response.content[0]["text"]
         data = json.loads(text)
@@ -153,7 +156,8 @@ class TestDirectorAgentDependencyInjection:
 
         # Case 1: Injected model takes priority over use_mock
         agent1 = DirectorAgent(model=custom_model, use_mock=True, engine_tools=None)
-        assert agent1.model == custom_model  # Not MockChatModel
+        # Injected model should be used (not MockChatModel instance)
+        assert agent1.model is custom_model
 
         # Case 2: use_mock when no model injected
         agent2 = DirectorAgent(use_mock=True, engine_tools=None)

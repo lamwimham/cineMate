@@ -89,11 +89,11 @@ class DirectorAgent(ReActAgent):
         use_mock: bool = False,
         model=None  # Dependency injection for model
     ):
-        # 1. Setup Model
-        if use_mock:
+        # 1. Setup Model (Priority: injected model > use_mock > default)
+        if model is not None:
+            pass  # Use injected model (highest priority)
+        elif use_mock:
             model = MockChatModel()
-        elif model is not None:
-            pass  # Use injected model
         else:
             # Real DashScope (Qwen) - Sprint 2: with API Key validation
             resolved_api_key = api_key or os.getenv("DASHSCOPE_API_KEY")
