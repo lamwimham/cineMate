@@ -12,6 +12,7 @@ Test Coverage:
 import pytest
 import asyncio
 from datetime import datetime
+from typing import Optional
 from unittest.mock import Mock, AsyncMock, patch
 from dataclasses import dataclass
 
@@ -52,6 +53,15 @@ class MockVideoProvider(BaseVideoProvider):
     min_duration_seconds = 1
     base_url = "https://mock.provider.api"
 
+    def __init__(self, api_key: str = "mock_key", **kwargs):
+        """Initialize mock provider."""
+        super().__init__(
+            api_key=api_key,
+            base_url=self.base_url,
+            timeout_seconds=300,
+            max_retries=3
+        )
+
     async def generate_video(self, params: GenerationParams) -> VideoGenerationResult:
         """Mock video generation."""
         return VideoGenerationResult(
@@ -78,6 +88,18 @@ class MockVideoProvider(BaseVideoProvider):
         base_rate = 0.15  # $0.15 per second
         resolution_factor = {"720p": 1.0, "1080p": 1.5, "4k": 2.5}
         return duration_seconds * base_rate * resolution_factor.get(resolution, 1.0)
+
+    async def check_status(self, job_id: str) -> str:
+        """Mock job status check."""
+        return "completed"
+
+    async def get_result(self, job_id: str) -> Optional[VideoGenerationResult]:
+        """Mock get result."""
+        return VideoGenerationResult(
+            job_id=job_id,
+            status="completed",
+            video_url="https://mock.video.url/output.mp4",
+        )
 
 
 # =============================================================================
@@ -124,7 +146,7 @@ class TestVideoGenerationResult:
             video_url="https://example.com/video.mp4",
         )
 
-        assert result.is_completed() is True
+        assert result.is_completed is True
 
     def test_is_completed_false_no_url(self):
         """is_completed returns False without video_url."""
@@ -133,7 +155,7 @@ class TestVideoGenerationResult:
             status="completed",
         )
 
-        assert result.is_completed() is False
+        assert result.is_completed is False
 
     def test_is_completed_false_processing(self):
         """is_completed returns False for processing status."""
@@ -143,7 +165,7 @@ class TestVideoGenerationResult:
             video_url=None,
         )
 
-        assert result.is_completed() is False
+        assert result.is_completed is False
 
     def test_is_failed_true(self):
         """is_failed returns True for failed status."""
@@ -153,7 +175,7 @@ class TestVideoGenerationResult:
             error_message="API timeout",
         )
 
-        assert result.is_failed() is True
+        assert result.is_failed is True
 
     def test_is_failed_true_with_error(self):
         """is_failed returns True with error_message."""
@@ -163,7 +185,7 @@ class TestVideoGenerationResult:
             error_message="Corrupted output",
         )
 
-        assert result.is_failed() is True
+        assert result.is_failed is True
 
     def test_is_failed_false(self):
         """is_failed returns False for successful result."""
@@ -173,7 +195,7 @@ class TestVideoGenerationResult:
             video_url="https://example.com/video.mp4",
         )
 
-        assert result.is_failed() is False
+        assert result.is_failed is False
 
     def test_created_at_default(self):
         """created_at has default value."""
