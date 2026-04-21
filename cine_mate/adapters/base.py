@@ -19,15 +19,13 @@ import asyncio
 
 
 class ProviderStatus(str, Enum):
-    """Status of a video generation job."""
+    """Provider status (for both job status and health status)."""
+    # Job status
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
-
-
-class ProviderHealthStatus(str, Enum):
-    """Provider health status"""
+    # Health status
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -137,10 +135,10 @@ class BaseVideoProvider(ABC):
         self.timeout_seconds = timeout_seconds
         self.max_retries = max_retries
         self.extra_config = kwargs
-        self._health_status = ProviderHealthStatus.UNKNOWN
+        self._health_status = ProviderStatus.UNKNOWN
 
     @property
-    def health_status(self) -> ProviderHealthStatus:
+    def health_status(self) -> ProviderStatus:
         return self._health_status
 
     @abstractmethod
@@ -266,10 +264,10 @@ class BaseVideoProvider(ABC):
     async def health_check(self) -> bool:
         """Check provider health."""
         try:
-            self._health_status = ProviderHealthStatus.HEALTHY
+            self._health_status = ProviderStatus.HEALTHY
             return True
         except Exception:
-            self._health_status = ProviderHealthStatus.UNHEALTHY
+            self._health_status = ProviderStatus.UNHEALTHY
             return False
 
     def _get_auth_headers(self) -> Dict[str, str]:

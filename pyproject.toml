@@ -38,3 +38,7 @@ target-version = "py310"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.setuptools.packages.find]
+include = ["cine_mate*", "tests*"]
+exclude = ["memory*", "prompts*", "docs*"]

@@ -10,7 +10,7 @@ from cine_mate.adapters.base import (
     VideoGenerationResult,
     GenerationParams,
     ProviderStatus,
-    ProviderHealthStatus,
+    ProviderStatus,
     VideoGenerationMode,
     ProviderError,
     ProviderAuthenticationError,
@@ -32,7 +32,7 @@ __all__ = [
     "VideoGenerationResult",
     "GenerationParams",
     "ProviderStatus",
-    "ProviderHealthStatus",
+    "ProviderStatus",
     "VideoGenerationMode",
 
     # Exceptions
