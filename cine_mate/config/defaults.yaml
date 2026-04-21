@@ -1,0 +1,131 @@
+# CineMate Default Configuration
+# Override via environment variables or cine_mate.yaml in project root
+
+models:
+  # LLM: Director Agent, intent parsing, script generation
+  llm:
+    primary:
+      provider: dashscope_qwen
+      model_name: qwen-max
+      api_key_env: DASHSCOPE_API_KEY
+      max_retries: 2
+      timeout_seconds: 60
+    fallback:
+      provider: dashscope_qwen
+      model_name: qwen-plus
+      api_key_env: DASHSCOPE_API_KEY
+      max_retries: 3
+      timeout_seconds: 90
+    budget:
+      provider: dashscope_qwen
+      model_name: qwen-turbo
+      api_key_env: DASHSCOPE_API_KEY
+      max_retries: 2
+      timeout_seconds: 30
+
+  # Text -> Image
+  text_to_image:
+    primary:
+      provider: flux
+      model_name: flux-pro-1.1
+      api_key_env: FLUX_API_KEY
+      max_retries: 2
+      timeout_seconds: 120
+      extra:
+        width: 1024
+        height: 1024
+    fallback:
+      provider: dashscope_wanx
+      model_name: wanx-v2
+      api_key_env: DASHSCOPE_API_KEY
+      max_retries: 3
+      timeout_seconds: 180
+    budget:
+      provider: stable_diffusion
+      model_name: sd-xl
+      api_key_env: STABILITY_API_KEY
+      max_retries: 2
+      timeout_seconds: 90
+
+  # Image -> Video
+  image_to_video:
+    primary:
+      provider: kling
+      model_name: kling-v1.6-pro
+      api_key_env: KLING_API_KEY
+      max_retries: 2
+      timeout_seconds: 300
+      extra:
+        duration: 5
+        resolution: "720p"
+    fallback:
+      provider: luma
+      model_name: luma-dream-machine
+      api_key_env: LUMA_API_KEY
+      max_retries: 3
+      timeout_seconds: 240
+    budget:
+      provider: minimax
+      model_name: minimax-video-01
+      api_key_env: MINIMAX_API_KEY
+      max_retries: 2
+      timeout_seconds: 180
+
+  # Text -> Video (direct)
+  text_to_video:
+    primary:
+      provider: runway
+      model_name: runway-gen3-alpha
+      api_key_env: RUNWAY_API_KEY
+      max_retries: 2
+      timeout_seconds: 300
+    fallback:
+      provider: kling
+      model_name: kling-text2video
+      api_key_env: KLING_API_KEY
+      max_retries: 2
+      timeout_seconds: 300
+
+  # Text-to-Speech
+  tts:
+    primary:
+      provider: cosyvoice
+      model_name: cosyvoice-v2
+      api_key_env: DASHSCOPE_API_KEY
+      max_retries: 2
+      timeout_seconds: 60
+    fallback:
+      provider: elevenlabs
+      model_name: eleven-multilingual-v2
+      api_key_env: ELEVENLABS_API_KEY
+      max_retries: 2
+      timeout_seconds: 90
+
+  # Vision: Quality gate, visual analysis (optional)
+  vision:
+    primary:
+      provider: dashscope_qwen
+      model_name: qwen-vl-max
+      api_key_env: DASHSCOPE_API_KEY
+      max_retries: 2
+      timeout_seconds: 30
+    fallback:
+      provider: dashscope_qwen
+      model_name: qwen-vl-plus
+      api_key_env: DASHSCOPE_API_KEY
+      max_retries: 3
+      timeout_seconds: 60
+
+# Infrastructure defaults
+infra:
+  redis_url: "redis://localhost:6379"
+  db_path: "./cinemate.db"
+  cas_root: "./cinemate_cas"
+  queue_name: "default"
+  worker_timeout: 600
+
+# Application settings
+app:
+  log_level: "INFO"
+  enable_telemetry: false
+  max_concurrent_runs: 5
