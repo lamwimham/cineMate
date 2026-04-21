@@ -14,7 +14,8 @@ import asyncio
 from typing import Optional, Dict, Any, Callable
 from datetime import datetime
 
-import redis.asyncio as redis
+import redis
+import redis.asyncio as async_redis
 from rq import Queue
 from rq.job import Job as RQJob
 
@@ -70,7 +71,7 @@ class JobQueue:
         event_bus: Optional[Any] = None  # EventBus instance
     ):
         self.redis_url = redis_url
-        self.redis: Optional[redis.Redis] = None
+        self.redis: Optional[async_redis.Redis] = None
         self.rq_queue: Optional[Queue] = None
         self.event_bus = event_bus
         self._connected = False
@@ -80,15 +81,15 @@ class JobQueue:
         if self._connected:
             return
         
-        self.redis = redis.from_url(
+        self.redis = async_redis.from_url(
             self.redis_url,
             encoding="utf-8",
             decode_responses=True
         )
         
-        # Initialize RQ Queue (sync)
-        sync_redis = redis.from_url(self.redis_url, decode_responses=True)
-        self.rq_queue = Queue(connection=sync_redis)
+        # Initialize RQ Queue using standard sync Redis client
+        sync_redis_client = redis.from_url(self.redis_url, decode_responses=True)
+        self.rq_queue = Queue(connection=sync_redis_client)
         
         self._connected = True
     
