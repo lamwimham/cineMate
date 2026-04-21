@@ -4,10 +4,11 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-2007%20lines-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-77%25-yellow.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-21%20files-brightgreen.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen.svg)](tests/)
+[![Architecture](https://img.shields.io/badge/architecture-4.1%2F5-blue.svg)](docs/PMO/)
 
-**[🌐 中文文档](README_zh.md)** | **[📝 Sprint 2 Progress](docs/PMO/sprint2_progress.md)** | **[✅ Sprint 1 Final Report](docs/PMO/sprint1_final_report.md)**
+**[🌐 中文文档](README_zh.md)** | **[📊 Progress Report](docs/PMO/project_progress_report.md)** | **[📝 Sprint 3 Roadmap](docs/PMO/sprint3_roadmap.md)**
 
 ---
 
@@ -106,8 +107,17 @@ Production-ready job queue for long-running video operations:
 └──────────────────────┬──────────────────────────────────────┘
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
-│              UPSTREAM PROVIDERS                             │
-│  OpenAI · Kling · Runway · Local GPU Cluster                │
+│              PROVIDER ADAPTERS (Sprint 2)                   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   Kling      │  │   Runway     │  │   Mock       │      │
+│  │  Provider    │  │  Provider    │  │  Provider    │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│  Factory + Registry + Health Check + Cost Estimation        │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────────┐
+│              UPSTREAM APIs                                  │
+│  OpenAI · Kling AI · Runway ML · Luma AI · Local GPU        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -263,6 +273,12 @@ cineMate/
 │   ├── agents/                # Director Agent & Tools
 │   │   ├── director_agent.py  # ReActAgent implementation
 │   │   └── tools/             # Agent tools (EngineTools)
+│   ├── adapters/              # Provider adapters (Sprint 2)
+│   │   ├── base.py            # BaseVideoProvider abstract class
+│   │   ├── factory.py         # Provider registry & factory
+│   │   ├── kling_provider.py  # Kling AI adapter
+│   │   ├── runway_provider.py # Runway ML adapter
+│   │   └── mock_provider.py   # Mock provider for testing
 │   ├── config/                # Configuration system (Sprint 2)
 │   │   ├── models.py          # Pydantic config models
 │   │   ├── defaults.yaml      # Default config
@@ -273,25 +289,35 @@ cineMate/
 │   ├── engine/                # Execution engine
 │   │   ├── dag.py             # DAG topology & dirty propagation
 │   │   ├── fsm.py             # Node state machine
-│   │   └── orchestrator.py    # Pipeline execution
+│   │   ├── orchestrator.py    # Pipeline execution
+│   │   └── queue_integration.py # JobQueue-Engine integration (Sprint 3)
 │   └── infra/                 # Async infrastructure
 │       ├── queue.py           # JobQueue (Redis)
 │       ├── event_bus.py       # EventBus (Pub/Sub)
 │       ├── schemas.py         # Event schemas
 │       └── worker.py          # RQ workers
-├── tests/                     # Test suite (21 files, 2007 lines)
-│   ├── unit/                  # Unit tests
+├── tests/                     # Test suite (21 files, 6,593 lines)
+│   ├── unit/                  # Unit tests (13 files)
+│   │   ├── adapters/          # Provider adapter tests
 │   │   ├── core/              # Store tests
 │   │   ├── engine/            # DAG/FSM tests
-│   │   └── infra/             # Queue/EventBus tests
-│   ├── integration/           # Integration tests
+│   │   ├── infra/             # Queue/EventBus tests
+│   │   └── config/            # Config loader tests
+│   ├── integration/           # Integration tests (4 files)
 │   └── conftest.py            # Pytest fixtures
 ├── docs/                      # Documentation
 │   ├── architecture.md        # System architecture
 │   ├── adr/                   # Architecture Decision Records
-│   └── PMO/                   # Project management (Sprint tracking)
+│   ├── PMO/                   # Project management
+│   │   ├── project_progress_report.md  # Overall progress
+│   │   ├── sprint2_day4_summary.md     # Sprint 2 Day 4
+│   │   └── sprint3_roadmap.md          # Sprint 3 roadmap
+│   └── testing/               # Testing reports
+│       └── sprint2_coverage_report.md  # Sprint 2 coverage
 ├── prompts/                   # LLM prompts
 │   └── intent_v1.md           # Director Agent prompt
+├── .github/workflows/         # CI/CD (GitHub Actions)
+│   └── test.yml               # pytest + coverage workflow
 ├── pyproject.toml             # Project config
 ├── pytest.ini                 # Test configuration
 └── docker-compose.infra.yml   # Redis for local dev
@@ -322,20 +348,21 @@ pytest tests/unit/core/test_store.py -v
 ### Current Test Status
 | Module | Tests | Coverage | Status |
 |--------|-------|----------|--------|
-| DAG | 42 | 100% | ✅ |
+| DAG | 42 | 97% | ✅ |
 | FSM | 42 | 97% | ✅ |
-| Store | 35 | 100% | ✅ |
-| Worker | 9 | 100% | ✅ |
-| Queue Integration | 12 | 100% | ✅ |
-| EventBus | - | 77% | ✅ |
-| **Total** | **21 files, 2007 lines** | **77%** | ✅ |
+| Store | 35 | 90% | ✅ |
+| Provider Adapters | 53 | 86% | ✅ |
+| Config Loader | 25 | 90% | ✅ |
+| Queue Integration | 12 | 88% | ✅ |
+| EventBus | 15 | 85% | ✅ |
+| **Total** | **21 files, 6,593 lines** | **85%** | ✅ |
 
 ### CI/CD Status
 | Component | Status | Note |
 |-----------|--------|------|
-| GitHub Actions | ⏳ | Sprint 2 Day 1 |
-| pytest + coverage | ✅ | Ready |
-| Redis container | ⏳ | Sprint 2 Day 1 |
+| GitHub Actions | ✅ | Multi-Python (3.11, 3.12) |
+| pytest + coverage | ✅ | Coverage >80% required |
+| Redis container | ✅ | docker-compose.infra.yml |
 
 ---
 
@@ -388,33 +415,49 @@ docs(adr): add Job Queue decision record
 - [x] Core Engine (DAG, FSM, Orchestrator)
 - [x] AgentScope Integration (DirectorAgent)
 - [x] Async Infrastructure (JobQueue, EventBus)
-- [x] Testing Framework (21 files, 2007 lines, 77% coverage)
+- [x] Testing Framework (21 files, 6,593 lines, 85% coverage)
 - [x] Event-Driven Orchestrator (node_completed trigger)
 - [x] Configuration System Skeleton (multi-model profiles)
 
 **Result**: ✅ **GO** - AgentScope + Engine integration validated
 
-### Sprint 2 (Current) 🔄
-**Target**: Real Agent Call + Provider Integration + CI/CD
+### Sprint 2 (80% Complete) 🔄
+**Target**: Provider Integration + CI/CD + Test Coverage
 
 | Day | Focus | Status |
 |-----|-------|--------|
-| Day 1 | P0 fixes (dependency injection + JobQueue) + CI/CD | ⏳ In Progress |
-| Day 2 | Config system + Real Agent call | ⏳ |
-| Day 3 | Provider adapter pattern | ⏳ |
-| Day 4 | Integration tests + Review | ⏳ |
-| Day 5 | Sprint Review Demo | ⏳ |
+| Day 1 | CI/CD GitHub Actions | ✅ Done |
+| Day 2 | Config system + Coverage expansion | ✅ Done |
+| Day 3 | Provider adapter pattern (Kling, Runway, Mock) | ✅ Done |
+| Day 4 | Integration tests + Coverage report | ✅ Done |
+| Day 5 | Sprint Review Demo | ⏳ Pending |
 
-**Day 1 Tasks**:
-- [ ] Fix 5 P0 issues (hermes) - dependency injection + JobQueue integration
-- [ ] Fix Issue #4 Mock Mode (hermes) - enable testing without API Key
-- [ ] CI/CD GitHub Actions (claude) - automated test pipeline
-- [ ] Interface alignment meeting (copaw + hermes) - JobQueue/EventBus APIs
+**Key Deliverables**:
+- [x] Provider Adapter Architecture (BaseVideoProvider, Factory, Registry)
+- [x] Kling & Runway Provider implementations
+- [x] Mock Provider for testing without API keys
+- [x] CI/CD with GitHub Actions (multi-Python)
+- [x] Test coverage: 85% (target >80%)
+- [x] Architecture Health Score: 4.1/5
 
-### Sprint 3 (Planned)
-- [ ] Web UI (Video Git visualization)
-- [ ] Multi-Provider Routing (Kling, Runway, etc.)
+### Sprint 3 (Started) ⏳
+**Target**: Architecture Improvements + Director Skill System
+
+| Part | Focus | Status |
+|------|-------|--------|
+| Part 1/3 | JobQueue-Engine Integration Layer | ✅ Done |
+| Part 2/3 | EventBus Complete Implementation | ⏳ In Progress |
+| Part 3/3 | Agents Dependency Injection | ⏳ In Progress |
+
+**Planned**:
+- [ ] Director Skill System (Wong Kar-wai, Cyberpunk styles)
+- [ ] Multi-Provider Routing with fallback
 - [ ] Production Hardening
+
+### Future Sprints
+- [ ] Web UI (Video Git visualization)
+- [ ] Human-in-the-Loop (HITL) Support
+- [ ] Production deployment
 
 ---
 
@@ -424,6 +467,9 @@ docs(adr): add Job Queue decision record
 - [Async Interface Spec](docs/architecture/async_interface.md)
 - [ADR-001: Job Queue](docs/adr/ADR-001_job_queue.md)
 - [Agent Prompt Template](prompts/intent_v1.md)
+- [Project Progress Report](docs/PMO/project_progress_report.md)
+- [Sprint 2 Test Coverage Report](docs/testing/sprint2_coverage_report.md)
+- [Sprint 3 Roadmap](docs/PMO/sprint3_roadmap.md)
 
 ---
 

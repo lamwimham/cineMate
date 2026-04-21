@@ -4,10 +4,11 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-121%20passing-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-47%25-yellow.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-21%20files-brightgreen.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen.svg)](tests/)
+[![Architecture](https://img.shields.io/badge/architecture-4.1%2F5-blue.svg)](docs/PMO/)
 
-**[🌐 English Version](README.md)** | **[📝 Sprint 1 进度](docs/PMO/sprint_1_progress.md)**
+**[🌐 English Version](README.md)** | **[📊 进度报告](docs/PMO/project_progress_report.md)** | **[📝 Sprint 3 路线图](docs/PMO/sprint3_roadmap.md)**
 
 ---
 
@@ -106,8 +107,17 @@ run_v2 = pipeline.run(
 └──────────────────────┬──────────────────────────────────────┘
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
-│              上游提供商 (Upstream Providers)                │
-│  OpenAI · Kling · Runway · 本地 GPU 集群                     │
+│              提供者适配器 (Sprint 2 新增)                   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   Kling      │  │   Runway     │  │   Mock       │      │
+│  │  Provider    │  │  Provider    │  │  Provider    │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│  工厂 + 注册 + 健康检查 + 成本估算                          │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────────┐
+│              上游 API                                        │
+│  OpenAI · Kling AI · Runway ML · Luma AI · 本地 GPU         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -263,30 +273,51 @@ cineMate/
 │   ├── agents/                # 导演智能体 & 工具
 │   │   ├── director_agent.py  # ReActAgent 实现
 │   │   └── tools/             # 智能体工具 (EngineTools)
+│   ├── adapters/              # 提供者适配器 (Sprint 2 新增)
+│   │   ├── base.py            # BaseVideoProvider 抽象类
+│   │   ├── factory.py         # 提供者注册 & 工厂
+│   │   ├── kling_provider.py  # Kling AI 适配器
+│   │   ├── runway_provider.py # Runway ML 适配器
+│   │   └── mock_provider.py   # Mock 提供者 (测试用)
+│   ├── config/                # 配置系统 (Sprint 2)
+│   │   ├── models.py          # Pydantic 配置模型
+│   │   ├── defaults.yaml      # 默认配置
+│   │   └── loader.py          # 配置加载器
 │   ├── core/                  # 核心数据模型 & 存储
 │   │   ├── models.py          # Pydantic 模型 (Run, Node, Artifact)
 │   │   └── store.py           # SQLite 存储层
 │   ├── engine/                # 执行引擎
 │   │   ├── dag.py             # DAG 拓扑 & 脏传播
 │   │   ├── fsm.py             # 节点状态机
-│   │   └── orchestrator.py    # 流程执行
+│   │   ├── orchestrator.py    # 流程执行
+│   │   └── queue_integration.py # JobQueue-Engine 集成 (Sprint 3)
 │   └── infra/                 # 异步基础设施
 │       ├── queue.py           # JobQueue (Redis)
 │       ├── event_bus.py       # EventBus (Pub/Sub)
 │       ├── schemas.py         # 事件模型
 │       └── worker.py          # RQ workers
-├── tests/                     # 测试套件
-│   ├── unit/                  # 单元测试
+├── tests/                     # 测试套件 (21 文件, 6,593 行)
+│   ├── unit/                  # 单元测试 (13 文件)
+│   │   ├── adapters/          # 提供者适配器测试
 │   │   ├── core/              # Store 测试
-│   │   └── engine/            # DAG/FSM 测试
-│   ├── integration/           # 集成测试
+│   │   ├── engine/            # DAG/FSM 测试
+│   │   ├── infra/             # Queue/EventBus 测试
+│   │   └── config/            # 配置加载器测试
+│   ├── integration/           # 集成测试 (4 文件)
 │   └── conftest.py            # Pytest fixtures
 ├── docs/                      # 文档
 │   ├── architecture.md        # 系统架构
 │   ├── adr/                   # 架构决策记录
-│   └── PMO/                   # 项目管理
+│   ├── PMO/                   # 项目管理
+│   │   ├── project_progress_report.md  # 整体进度
+│   │   ├── sprint2_day4_summary.md     # Sprint 2 Day 4
+│   │   └── sprint3_roadmap.md          # Sprint 3 路线图
+│   └── testing/               # 测试报告
+│       └── sprint2_coverage_report.md  # Sprint 2 覆盖率
 ├── prompts/                   # LLM 提示词
 │   └── intent_v1.md           # 导演智能体提示词
+├── .github/workflows/         # CI/CD (GitHub Actions)
+│   └── test.yml               # pytest + coverage 工作流
 ├── pyproject.toml             # 项目配置
 ├── pytest.ini                 # 测试配置
 └── docker-compose.infra.yml   # 本地 Redis 开发
@@ -317,11 +348,14 @@ pytest tests/unit/core/test_store.py -v
 ### 当前测试状态
 | 模块 | 测试数 | 覆盖率 | 状态 |
 |------|--------|--------|------|
-| DAG | 42 | 100% | ✅ |
+| DAG | 42 | 97% | ✅ |
 | FSM | 42 | 97% | ✅ |
-| Store | 35 | 100% | ✅ |
-| Models | 2 | 100% | ✅ |
-| **总计** | **121** | **47%** | ✅ |
+| Store | 35 | 90% | ✅ |
+| Provider 适配器 | 53 | 86% | ✅ |
+| Config Loader | 25 | 90% | ✅ |
+| Queue Integration | 12 | 88% | ✅ |
+| EventBus | 15 | 85% | ✅ |
+| **总计** | **21 文件, 6,593 行** | **85%** | ✅ |
 
 ---
 
@@ -370,22 +404,53 @@ docs(adr): 添加任务队列决策记录
 
 ## 📋 路线图
 
-### Sprint 1 (当前) ✅
+### Sprint 1 (已完成) ✅
 - [x] 核心引擎 (DAG, FSM, Orchestrator)
 - [x] AgentScope 集成 (导演智能体)
 - [x] 异步基础设施 (JobQueue, EventBus)
-- [x] 测试框架 (121 个测试，核心 96% 覆盖率)
+- [x] 测试框架 (21 文件, 6,593 行, 85% 覆盖率)
+- [x] 事件驱动编排器 (node_completed 触发器)
+- [x] 配置系统骨架 (多模型配置)
 
-### Sprint 2 (下一步)
-- [ ] 云网关 (认证、计费、代理)
-- [ ] 技能系统 (王家卫、赛博朋克风格)
-- [ ] CI/CD 流程 (GitHub Actions)
-- [ ] CLI 接口
+**结果**: ✅ **GO** - AgentScope + Engine 集成验证通过
 
-### Sprint 3
-- [ ] Web UI (视频 Git 可视化)
-- [ ] 多提供商路由 (Kling, Runway 等)
+### Sprint 2 (80% 完成) 🔄
+**目标**: 提供者集成 + CI/CD + 测试覆盖率
+
+| Day | 重点 | 状态 |
+|-----|------|------|
+| Day 1 | CI/CD GitHub Actions | ✅ 完成 |
+| Day 2 | 配置系统 + 覆盖率扩展 | ✅ 完成 |
+| Day 3 | 提供者适配器模式 (Kling, Runway, Mock) | ✅ 完成 |
+| Day 4 | 集成测试 + 覆盖率报告 | ✅ 完成 |
+| Day 5 | Sprint 评审演示 | ⏳ 待完成 |
+
+**关键成果**:
+- [x] 提供者适配器架构 (BaseVideoProvider, Factory, Registry)
+- [x] Kling & Runway 提供者实现
+- [x] Mock 提供者 (无需 API Key 测试)
+- [x] CI/CD GitHub Actions (多 Python 版本)
+- [x] 测试覆盖率: 85% (目标 >80%)
+- [x] 架构健康评分: 4.1/5
+
+### Sprint 3 (已启动) ⏳
+**目标**: 架构改进 + 导演技能系统
+
+| Part | 重点 | 状态 |
+|------|------|------|
+| Part 1/3 | JobQueue-Engine 集成层 | ✅ 完成 |
+| Part 2/3 | EventBus 完整实现 | ⏳ 进行中 |
+| Part 3/3 | Agents 依赖注入完善 | ⏳ 进行中 |
+
+**规划**:
+- [ ] 导演技能系统 (王家卫、赛博朋克风格)
+- [ ] 多提供者路由 + 回退机制
 - [ ] 生产强化
+
+### 未来 Sprint
+- [ ] Web UI (视频 Git 可视化)
+- [ ] Human-in-the-Loop (HITL) 支持
+- [ ] 生产环境部署
 
 ---
 
@@ -395,7 +460,9 @@ docs(adr): 添加任务队列决策记录
 - [异步接口规范](docs/architecture/async_interface.md)
 - [ADR-001: 任务队列选型](docs/adr/ADR-001_job_queue.md)
 - [智能体提示词模板](prompts/intent_v1.md)
-- [Sprint 1 进度](docs/PMO/sprint_1_progress.md)
+- [项目进度报告](docs/PMO/project_progress_report.md)
+- [Sprint 2 测试覆盖率报告](docs/testing/sprint2_coverage_report.md)
+- [Sprint 3 路线图](docs/PMO/sprint3_roadmap.md)
 
 ---
 
