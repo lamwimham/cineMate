@@ -129,7 +129,7 @@ async def health_check_all_providers(
         try:
             provider = get_provider(provider_name, api_key)
             is_healthy = await provider.health_check()
-            results[provider_name] = provider.status
+            results[provider_name] = provider.health_status
         except Exception:
             results[provider_name] = ProviderStatus.UNHEALTHY
     
