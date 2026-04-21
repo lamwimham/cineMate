@@ -14,7 +14,8 @@ import asyncio
 from typing import Optional, Dict, Any, Callable
 from datetime import datetime
 
-import redis.asyncio as redis
+import redis.asyncio as redis_async
+import redis
 from rq import Queue
 from rq.job import Job as RQJob
 
@@ -80,13 +81,14 @@ class JobQueue:
         if self._connected:
             return
         
-        self.redis = redis.from_url(
+        # Async redis for JobQueue operations
+        self.redis = redis_async.from_url(
             self.redis_url,
             encoding="utf-8",
             decode_responses=True
         )
         
-        # Initialize RQ Queue (sync)
+        # Sync redis for RQ Queue (RQ 2.x requires sync client)
         sync_redis = redis.from_url(self.redis_url, decode_responses=True)
         self.rq_queue = Queue(connection=sync_redis)
         
@@ -214,17 +216,24 @@ class JobQueue:
         # Fetch all fields
         data = await self.redis.hgetall(job_key)
         
+        # Helper to get value (handle bytes/str)
+        def get_val(key: str, default=None):
+            val = data.get(key) or data.get(key.encode())
+            if isinstance(val, bytes):
+                val = val.decode()
+            return val or default
+        
         return JobStatusResponse(
-            job_id=data.get("job_id"),
-            run_id=data.get("run_id"),
-            node_id=data.get("node_id"),
-            status=JobStatus(data.get("status", "pending")),
-            progress=int(data.get("progress", 0)),
-            result=json.loads(data.get("result")) if data.get("result") else None,
-            error=data.get("error"),
-            created_at=datetime.fromisoformat(data.get("created_at")),
-            started_at=datetime.fromisoformat(data.get("started_at")) if data.get("started_at") else None,
-            completed_at=datetime.fromisoformat(data.get("completed_at")) if data.get("completed_at") else None,
+            job_id=get_val("job_id"),
+            run_id=get_val("run_id"),
+            node_id=get_val("node_id"),
+            status=JobStatus(get_val("status", "pending")),
+            progress=int(get_val("progress", 0)),
+            result=json.loads(get_val("result")) if get_val("result") else None,
+            error=get_val("error"),
+            created_at=datetime.fromisoformat(get_val("created_at")),
+            started_at=datetime.fromisoformat(get_val("started_at")) if get_val("started_at") else None,
+            completed_at=datetime.fromisoformat(get_val("completed_at")) if get_val("completed_at") else None,
         )
     
     async def cancel_job(self, job_id: str) -> bool:
@@ -239,6 +248,14 @@ class JobQueue:
         
         job_key = f"job:{job_id}"
         current_status = await self.redis.hget(job_key, "status")
+        
+        # Handle bytes response
+        if isinstance(current_status, bytes):
+            current_status = current_status.decode()
+        
+        # Job not found
+        if current_status is None:
+            return False
         
         if current_status in (JobStatus.RUNNING.value, JobStatus.COMPLETED.value, JobStatus.FAILED.value):
             return False

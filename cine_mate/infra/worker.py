@@ -63,15 +63,19 @@ def _publish_event_sync(
     redis_conn.publish(channel, json.dumps(message))
 
 
-def execute_job(job_id: str):
+def execute_job(job_id: str, **kwargs):
     """
     Execute a single job.
     
     This is the entry point for RQ Worker.
     It fetches the job from Redis, executes the appropriate handler,
     and publishes completion/failure events.
+    
+    Args:
+        job_id: Job identifier (e.g., 'job_xxx')
+        **kwargs: Extra arguments from RQ (retry_on_failure, max_retries, etc.)
     """
-    print(f"[Worker] Starting job {job_id}")
+    print(f"[Worker] Starting job {job_id} (kwargs: {kwargs})")
     
     try:
         # Get Redis connection from RQ
@@ -84,11 +88,22 @@ def execute_job(job_id: str):
         if not job_data:
             raise ValueError(f"Job {job_id} not found")
         
-        # Parse job data
-        job_type = job_data.get("job_type")
-        params = json.loads(job_data.get("params", "{}"))
-        run_id = job_data.get("run_id")
-        node_id = job_data.get("node_id")
+        # Parse job data (handle bytes keys from Redis)
+        def get_value(key: str) -> str:
+            """Get value from job_data, handling both bytes and str keys"""
+            if key in job_data:
+                val = job_data[key]
+                return val.decode() if isinstance(val, bytes) else val
+            # Try bytes key
+            if key.encode() in job_data:
+                val = job_data[key.encode()]
+                return val.decode() if isinstance(val, bytes) else val
+            return None
+        
+        job_type = get_value("job_type")
+        params = json.loads(get_value("params") or "{}")
+        run_id = get_value("run_id")
+        node_id = get_value("node_id")
         
         print(f"[Worker] Executing {job_type} for run={run_id}, node={node_id}")
         
