@@ -3,19 +3,19 @@ CineMate Director Agent (AgentScope 1.0)
 Task 2.3 Implementation
 
 P0 Fix: Dependency injection for model + mock_mode support (closes #4)
+Sprint 2: Real DashScope API call + API Key validation
 """
 
 import os
-import asyncio
 import json
 from typing import Optional
 
 from agentscope.agent import ReActAgent
 from agentscope.model import DashScopeChatModel
 from agentscope.memory import InMemoryMemory
-from agentscope.message import Msg
+from agentscope.formatter import DashScopeChatFormatter
 
-from cine_mate.agents.tools.engine_tools import EngineTools, register_engine_tools
+from cine_mate.agents.tools.engine_tools import EngineTools
 
 # Load system prompt from file
 # director_agent.py is in cine_mate/agents/
@@ -28,11 +28,14 @@ PROMPT_PATH = os.path.abspath(
 class MockChatModel:
     """Mock model for testing without API keys (Issue #4)"""
     
-    def __call__(self, *args, **kwargs):
-        # Return a mock response with a simple DAG plan
-        mock_response = type('MockResponse', (), {})()
-        mock_response.content = [
-            {
+    model_name = "mock"
+    stream = False
+    
+    async def __call__(self, *args, **kwargs):
+        from agentscope.message import Msg
+        return Msg(
+            name="assistant",
+            content=[{
                 "type": "text",
                 "text": json.dumps({
                     "intent": "Mock video request",
@@ -42,9 +45,9 @@ class MockChatModel:
                         {"id": "node_video", "type": "image_to_video", "parents": ["node_image"]}
                     ]
                 })
-            }
-        ]
-        return mock_response
+            }],
+            role="assistant"
+        )
 
 
 def load_system_prompt() -> str:
@@ -52,9 +55,6 @@ def load_system_prompt() -> str:
     try:
         with open(PROMPT_PATH, 'r') as f:
             content = f.read()
-            start_marker = "```\n"
-            end_marker = "```"
-            
             if "## System Prompt" in content:
                 prompt_part = content.split("## System Prompt")[1]
                 if prompt_part.startswith("```"):
@@ -73,7 +73,11 @@ class DirectorAgent(ReActAgent):
     The main Director Agent for CineMate.
     Responsible for parsing user intent, planning DAGs, and controlling the Engine.
     
-    P0 Fix: Supports dependency injection for model and mock_mode for testing.
+    Supports:
+    - Dependency injection for model
+    - Mock mode for testing (no API key)
+    - Real DashScope API call (default)
+    - API Key validation at init time
     """
 
     def __init__(
@@ -83,18 +87,25 @@ class DirectorAgent(ReActAgent):
         api_key: Optional[str] = None,
         engine_tools: Optional[EngineTools] = None,
         use_mock: bool = False,
-        model=None  # P0 #1: Dependency injection for model
+        model=None  # Dependency injection for model
     ):
-        # 1. Setup Model (P0 #1: Dependency injection + Issue #4: mock_mode)
+        # 1. Setup Model
         if use_mock:
             model = MockChatModel()
         elif model is not None:
             pass  # Use injected model
         else:
-            # Default to DashScope (Qwen) as per project config
+            # Real DashScope (Qwen) - Sprint 2: with API Key validation
+            resolved_api_key = api_key or os.getenv("DASHSCOPE_API_KEY")
+            if not resolved_api_key:
+                raise ValueError(
+                    "DASHSCOPE_API_KEY not set. "
+                    "Please set the environment variable or pass api_key parameter. "
+                    "Alternatively, use use_mock=True for testing without API."
+                )
             model = DashScopeChatModel(
                 model_name=model_name,
-                api_key=api_key or os.getenv("DASHSCOPE_API_KEY"),
+                api_key=resolved_api_key,
             )
 
         # 2. Load System Prompt
@@ -105,12 +116,9 @@ class DirectorAgent(ReActAgent):
         if engine_tools:
             from agentscope.tool import Toolkit
             toolkit = Toolkit()
-            # Register tools from the manager
             toolkit.register_tool_function(engine_tools.create_video)
             toolkit.register_tool_function(engine_tools.get_run_status)
             toolkit.register_tool_function(engine_tools.get_run_list)
-            
-            # Add a new tool for submitting the full DAG plan
             toolkit.register_tool_function(engine_tools.submit_plan)
 
         # 4. Initialize ReActAgent
@@ -118,6 +126,7 @@ class DirectorAgent(ReActAgent):
             name=name,
             sys_prompt=sys_prompt,
             model=model,
+            formatter=DashScopeChatFormatter(),
             toolkit=toolkit,
             memory=InMemoryMemory(),
         )

@@ -56,7 +56,8 @@ class ModelProfile(BaseModel):
     """Defines a model configuration for a specific task."""
     provider: str
     model_name: str
-    api_key_env: Optional[str] = None  # env var name
+    api_key_env: Optional[str] = None  # env var name (e.g., DASHSCOPE_API_KEY)
+    api_key: Optional[str] = None  # Direct API key (override env var)
     base_url: Optional[str] = None
     max_retries: int = 2
     timeout_seconds: int = 120

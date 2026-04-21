@@ -13,6 +13,19 @@ from cine_mate.config.models import (
     TTSProvider,
 )
 
+from cine_mate.config.loader import (
+    load_config,
+    get_model_for_task,
+    get_model_by_cost,
+)
+
+from cine_mate.config.validator import (
+    validate_api_keys,
+    get_validation_summary,
+    print_validation_report,
+    ConfigValidationError,
+)
+
 __all__ = [
     "CineMateConfig",
     "ModelsConfig",
@@ -24,4 +37,11 @@ __all__ = [
     "ImageProvider",
     "VideoProvider",
     "TTSProvider",
+    "load_config",
+    "get_model_for_task",
+    "get_model_by_cost",
+    "validate_api_keys",
+    "get_validation_summary",
+    "print_validation_report",
+    "ConfigValidationError",
 ]
