@@ -7,6 +7,7 @@ from cine_mate.skills.models import (
 from cine_mate.skills.skill_store import SkillStore
 from cine_mate.skills.skill_indexer import SkillIndexer
 from cine_mate.skills.skill_loader import SkillLoader
+from cine_mate.skills.skill_reviewer import SkillReviewer
 
 __all__ = [
     "SkillMetadata",
@@ -17,4 +18,5 @@ __all__ = [
     "SkillStore",
     "SkillIndexer",
     "SkillLoader",
+    "SkillReviewer",
 ]
