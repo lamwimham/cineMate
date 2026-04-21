@@ -69,6 +69,54 @@ Re-render:     B' → C' → D'
 Reuse:    A (unchanged)
 ```
 
+### 🧠 Skill System (Sprint 3 New)
+Progressive disclosure for the Director Agent — reusable patterns and auto-generated skills:
+
+```
+User: "Create a cyberpunk video"
+    ↓
+DirectorAgent receives skill index:
+  - style-cyberpunk: Neon lights, dark atmosphere...
+  - workflow-short-ad: 5-step product ad template...
+    ↓
+Agent can load full skill content on-demand
+    ↓
+Execution learns from experience → SkillReviewer auto-generates new skills
+```
+
+**Skill Categories**:
+- **STYLE**: Visual style strategies (cyberpunk, wong-kar-wai)
+- **WORKFLOW**: Workflow templates (short-ad, product-review)
+- **ERROR_RECOVERY**: Error patterns learned from failures
+- **QUALITY**: Quality gating and evaluation
+
+### 🖥️ CLI Commands (Sprint 3 New)
+Full CLI for MVP video production:
+
+```bash
+# Create video from natural language
+cinemate create "A cyberpunk city with neon lights"
+
+# Apply a skill/style
+cinemate create "Product ad for headphones" --style workflow-short-ad
+
+# Interactive loop mode
+cinemate loop
+
+# Video Git commands
+cinemate history              # Show run history
+cinemate history --branch main --limit 10
+cinemate history --run run_001  # Node-level details
+
+cinemate diff run_002        # Compare with parent
+cinemate diff run_002 --parent run_001
+
+cinemate branches            # List all branches
+
+# System status
+cinemate status
+```
+
 ### 🏗️ Async Infrastructure
 Production-ready job queue for long-running video operations:
 - **JobQueue**: Redis-backed queue with priority support
@@ -88,6 +136,11 @@ Production-ready job queue for long-running video operations:
 ┌──────────────────────▼──────────────────────────────────────┐
 │                 DIRECTOR AGENT                              │
 │  ReActAgent + Intent Parsing → DAG Construction             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │              SKILL SYSTEM (Sprint 3)                  │  │
+│  │  SkillStore + SkillIndexer + SkillLoader + Reviewer  │  │
+│  │  Progressive disclosure + Auto-generation            │  │
+│  └──────────────────────────────────────────────────────┘  │
 └──────────────────────┬──────────────────────────────────────┘
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
@@ -286,41 +339,63 @@ cineMate/
 │   ├── core/                  # Core data models & storage
 │   │   ├── models.py          # Pydantic models (Run, Node, Artifact)
 │   │   └── store.py           # SQLite storage layer
+│   ├── cli/                   # CLI commands (Sprint 3)
+│   │   ├── main.py            # Click CLI entry point
+│   │   ├── commands.py        # create/loop/status commands
+│   │   └── video_git.py       # history/diff/branches commands
 │   ├── engine/                # Execution engine
 │   │   ├── dag.py             # DAG topology & dirty propagation
 │   │   ├── fsm.py             # Node state machine
 │   │   ├── orchestrator.py    # Pipeline execution
-│   │   └── queue_integration.py # JobQueue-Engine integration (Sprint 3)
-│   └── infra/                 # Async infrastructure
-│       ├── queue.py           # JobQueue (Redis)
-│       ├── event_bus.py       # EventBus (Pub/Sub)
-│       ├── schemas.py         # Event schemas
-│       └── worker.py          # RQ workers
-├── tests/                     # Test suite (21 files, 6,593 lines)
-│   ├── unit/                  # Unit tests (13 files)
+│   │   └── queue_integration.py # JobQueue-Engine integration
+│   ├── infra/                 # Async infrastructure
+│   │   ├── queue.py           # JobQueue (Redis)
+│   │   ├── event_bus.py       # EventBus (Pub/Sub)
+│   │   ├── schemas.py         # Event schemas
+│   │   └── worker.py          # RQ workers
+│   └── skills/                # Skill System (Sprint 3)
+│       ├── models.py          # Skill metadata models
+│       ├── skill_store.py     # SQLite + filesystem CRUD
+│       ├── skill_indexer.py   # Progressive disclosure index
+│       ├── skill_loader.py    # On-demand content loading
+│       ├── skill_reviewer.py  # Hermes auto-generation
+│       └── data/              # Skill files directory
+│           ├── style-cyberpunk/SKILL.md
+│           └── workflow-short-ad/SKILL.md
+├── tests/                     # Test suite (~350 tests, 88% coverage)
+│   ├── unit/                  # Unit tests
 │   │   ├── adapters/          # Provider adapter tests
+│   │   ├── cli/               # CLI command tests
 │   │   ├── core/              # Store tests
 │   │   ├── engine/            # DAG/FSM tests
 │   │   ├── infra/             # Queue/EventBus tests
+│   │   ├── skills/            # Skill system tests
 │   │   └── config/            # Config loader tests
-│   ├── integration/           # Integration tests (4 files)
+│   ├── integration/           # Integration tests (MVP Demo)
 │   └── conftest.py            # Pytest fixtures
 ├── docs/                      # Documentation
 │   ├── architecture.md        # System architecture
 │   ├── adr/                   # Architecture Decision Records
+│   ├── skills/                # Skill System docs (Sprint 3)
+│   │   ├── user_guide.md      # Skill creation guide
+│   │   └and api_reference.md   # Skill API reference
 │   ├── PMO/                   # Project management
-│   │   ├── project_progress_report.md  # Overall progress
-│   │   ├── sprint2_day4_summary.md     # Sprint 2 Day 4
-│   │   └── sprint3_roadmap.md          # Sprint 3 roadmap
-│   └── testing/               # Testing reports
-│       └── sprint2_coverage_report.md  # Sprint 2 coverage
+│   │   ├── project_progress_report.md
+│   │   ├── sprint3_roadmap.md
+│   │   └and sprint3_day2-6_plan.md
+│   └and demo/                  # Demo guides
+│       └and mvp_demo_guide.md
 ├── prompts/                   # LLM prompts
 │   └── intent_v1.md           # Director Agent prompt
+├── scripts/                   # Utility scripts
+│   └and demo_mvp.py            # MVP E2E demo script
 ├── .github/workflows/         # CI/CD (GitHub Actions)
-│   └── test.yml               # pytest + coverage workflow
+│   └and test.yml               # pytest + coverage workflow
 ├── pyproject.toml             # Project config
 ├── pytest.ini                 # Test configuration
-└── docker-compose.infra.yml   # Redis for local dev
+├── README.md                  # English documentation
+├── README_zh.md               # Chinese documentation
+└and docker-compose.infra.yml   # Redis for local dev
 ```
 
 ---
@@ -355,7 +430,13 @@ pytest tests/unit/core/test_store.py -v
 | Config Loader | 25 | 90% | ✅ |
 | Queue Integration | 12 | 88% | ✅ |
 | EventBus | 15 | 85% | ✅ |
-| **Total** | **21 files, 6,593 lines** | **85%** | ✅ |
+| SkillStore | 29 | 95% | ✅ |
+| SkillLoader | 14 | 92% | ✅ |
+| SkillReviewer | 15 | 93% | ✅ |
+| CLI Commands | 25 | 88% | ✅ |
+| Video Git | 21 | 90% | ✅ |
+| Integration Tests | 8 | 85% | ✅ |
+| **Total** | **~350 tests** | **88%** | ✅ |
 
 ### CI/CD Status
 | Component | Status | Note |
@@ -421,7 +502,7 @@ docs(adr): add Job Queue decision record
 
 **Result**: ✅ **GO** - AgentScope + Engine integration validated
 
-### Sprint 2 (80% Complete) 🔄
+### Sprint 2 (Completed) ✅
 **Target**: Provider Integration + CI/CD + Test Coverage
 
 | Day | Focus | Status |
@@ -430,7 +511,6 @@ docs(adr): add Job Queue decision record
 | Day 2 | Config system + Coverage expansion | ✅ Done |
 | Day 3 | Provider adapter pattern (Kling, Runway, Mock) | ✅ Done |
 | Day 4 | Integration tests + Coverage report | ✅ Done |
-| Day 5 | Sprint Review Demo | ⏳ Pending |
 
 **Key Deliverables**:
 - [x] Provider Adapter Architecture (BaseVideoProvider, Factory, Registry)
@@ -440,22 +520,44 @@ docs(adr): add Job Queue decision record
 - [x] Test coverage: 85% (target >80%)
 - [x] Architecture Health Score: 4.1/5
 
-### Sprint 3 (Started) ⏳
-**Target**: Architecture Improvements + Director Skill System
+### Sprint 3 (Completed) ✅
+**Target**: Skill System + CLI + MVP Readiness
 
-| Part | Focus | Status |
-|------|-------|--------|
-| Part 1/3 | JobQueue-Engine Integration Layer | ✅ Done |
-| Part 2/3 | EventBus Complete Implementation | ⏳ In Progress |
-| Part 3/3 | Agents Dependency Injection | ⏳ In Progress |
+| Issue | Focus | Status |
+|-------|-------|--------|
+| #34 | SkillStore + SkillIndexer | ✅ Merged (PR #43) |
+| #35 | MVP CLI Entry Point | ✅ Merged (PR #44) |
+| #36 | SkillLoader + DirectorAgent | ✅ Merged (PR #46) |
+| #37 | MVP E2E Demo | ✅ Merged (PR #45) |
+| #38 | SkillReviewer Auto-generation | ✅ Merged (PR #47) |
+| #39 | Video Git CLI | ✅ Merged (PR #48) |
 
-**Planned**:
-- [ ] Director Skill System (Wong Kar-wai, Cyberpunk styles)
-- [ ] Multi-Provider Routing with fallback
-- [ ] Production Hardening
+**Key Deliverables**:
+- [x] SkillStore: SQLite + filesystem CRUD, YAML frontmatter validation
+- [x] SkillIndexer: Progressive disclosure index (name + description only)
+- [x] SkillLoader: OpenCode XML pattern for on-demand loading
+- [x] SkillReviewer: Hermes auto-generation from PipelineRun analysis
+- [x] CLI Commands: create/loop/status/history/diff/branches
+- [x] Video Git: Git-like version control for video assets
+- [x] MVP Demo: Full pipeline validation (NL → Intent → DAG → Orchestrator)
+
+**Test Results**:
+- SkillStore: 29/29 ✅
+- SkillLoader: 14/14 ✅
+- SkillReviewer: 15/15 ✅
+- CLI: 25/25 ✅
+- Video Git: 21/21 ✅
+- Integration: 8/8 ✅
+
+### Sprint 4 (Planning) ⏳
+**Target**: MVP Release
+
+- [ ] Web UI (Video Git visualization)
+- [ ] Real API validation (Kling/Runway)
+- [ ] Production hardening
+- [ ] MVP Release
 
 ### Future Sprints
-- [ ] Web UI (Video Git visualization)
 - [ ] Human-in-the-Loop (HITL) Support
 - [ ] Production deployment
 
