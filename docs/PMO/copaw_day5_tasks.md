@@ -100,18 +100,26 @@
 #### 4. Code Review hermes 代码
 
 **审查对象**:
-- [ ] `cine_mate/agents/director_agent.py`
-- [ ] `cine_mate/agents/tools/engine_tools.py`
-- [ ] `cine_mate/engine/orchestrator.py` (Event-Driven 逻辑)
+- [x] `cine_mate/agents/director_agent.py` ✅
+- [x] `cine_mate/agents/tools/engine_tools.py` ✅
+- [x] `cine_mate/engine/orchestrator.py` (Event-Driven 逻辑) ✅
 
 **审查重点**:
-- [ ] 可测试性
-- [ ] 错误处理
-- [ ] Event-Driven 依赖控制
-- [ ] 与 JobQueue 接口对齐
+- [x] 可测试性 ✅
+- [x] 错误处理 ✅
+- [x] Event-Driven 依赖控制 ✅
+- [x] 与 JobQueue 接口对齐 ✅
+
+**审查结果**:
+- **9 个问题**: 5 个 P0, 2 个 P1, 2 个 P2
+- **关键发现**:
+  - DirectorAgent/EngineTools 缺少依赖注入
+  - EngineTools 未使用 JobQueue 提交任务
+  - Orchestrator 未订阅/发布 EventBus 事件
+- **文档**: `docs/review/code_review_hermes_agents.md`
 
 **预计时间**: 1 小时  
-**状态**: ⏳ 待开始
+**状态**: ✅ 已完成
 
 ---
 
@@ -150,7 +158,7 @@
 |------|------|------|------|
 | 单元测试覆盖率 | >80% | 55% (infra 模块 >70%) | ✅ |
 | PR #9 边界测试 | 通过 | 通过 | ✅ |
-| Code Review 反馈 | 提交 | 待完成 | ⏳ |
+| Code Review 反馈 | 提交 | 已提交 | ✅ |
 | README 更新 | 完成 | 待完成 | ⏳ |
 
 ---
@@ -170,10 +178,15 @@
 - ✅ 修复 queue.py bytes/str 转换 bug
 - ✅ 验证所有边界情况（特殊字符、大数据、bytes 响应）
 
-### 待记录
-- README 文档更新
-- Code Review 反馈
-- Demo 准备
+### 15:00 - Code Review 完成
+- ✅ 审查 director_agent.py, engine_tools.py, orchestrator.py
+- ✅ 识别 9 个问题 (5 P0, 2 P1, 2 P2)
+- ✅ 创建审查报告 `docs/review/code_review_hermes_agents.md`
+- ✅ 提交 Git commit
+
+### 待完成
+- [ ] README 文档更新 (P1)
+- [ ] Demo 准备 (P2)
 
 ---
 
