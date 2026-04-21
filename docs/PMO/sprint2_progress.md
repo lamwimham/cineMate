@@ -2,7 +2,73 @@
 
 > **Sprint**: 2 (2026-04-22 ~ 2026-04-28)
 > **目标**: 真实 Agent 调用 + Provider 集成 + CI/CD + 测试覆盖率
-> **更新日期**: 2026-04-24 (Day 3)
+> **更新日期**: 2026-04-24 (Day 3 完成 + Day 4 规划)
+
+---
+
+## 📊 Sprint 2 目标完成情况
+
+| 目标 | 状态 | 备注 |
+|------|------|------|
+| 真实 Agent 调用 | ✅ | Day 2 完成 (PR #15) |
+| **Provider 适配器** | **✅** | **Day 3 完成 (PR #16 + PR #17)** |
+| CI/CD GitHub Actions | ✅ | Day 1 完成 (PR #13) |
+| 测试覆盖率 >90% | ✅ | Day 2 + Day 3 完成 (PR #14 + PR #17) |
+
+**Sprint 2 所有核心目标已完成 ✅**
+
+---
+
+## 📅 Day 4 规划 (2026-04-25)
+
+### 🚨 发现的环境问题
+
+**Python 环境 mismatch**:
+
+```
+which python → /Users/lianwenhua/indie/hermes-agent/venv/bin/python
+which pip    → /Users/lianwenhua/Library/Python/3.9/bin/pip
+```
+
+pytest 运行在 hermes-agent venv，但 networkx 安装在用户级 Python 3.9，导致 pytest 无法导入 networkx。
+
+**优先级**: 🔴 **P0 - Day 4 首要任务**
+
+### Day 4 优先级任务
+
+| 优先级 | 任务 | Owner | 预估工时 | 交付物 |
+|--------|------|-------|----------|--------|
+| 🔴 **P0** | **修复 Python 环境** | **hermes + copaw** | **1h** | **venv 依赖安装** |
+| 🟡 **P1** | **运行完整测试验证** | **claude** | **1h** | **pytest 全通过 + 覆盖率报告** |
+| 🟡 **P1** | **整体代码审查** | **copaw** | **2h** | **架构健康度报告** |
+| 🟢 **P2** | **Demo 准备 (脚本 + 文档)** | **hermes** | **1h** | **Demo 脚本 + Demo 文档** |
+| 🟢 **P2** | **Sprint Review 幻灯片** | **PM** | **0.5h** | **Review 幻灯片** |
+
+### Day 4 时间表
+
+| 时间 | 事项 | Owner | 优先级 |
+|------|------|-------|--------|
+| 09:00 | Day 4 任务下发 | PM | - |
+| **09:00** | **修复 Python 环境** | **hermes + copaw** | **🔴 P0** |
+| 10:00 | 环境验证完成 | claude | 🔴 P0 |
+| **10:30** | **运行完整测试** | **claude** | **🟡 P1** |
+| **11:00** | **代码审查开始** | **copaw** | **🟡 P1** |
+| 12:00 | Lunch | - | - |
+| **13:00** | **覆盖率报告** | **claude** | **🟡 P1** |
+| **14:00** | **代码审查完成** | **copaw** | **🟡 P1** |
+| **15:00** | **Demo 脚本准备** | **hermes** | **🟢 P2** |
+| 16:00 | Demo 流程验证 | hermes + PM | 🟢 P2 |
+| 17:00 | Daily Standup + Demo Review | 全员 | 🟢 P2 |
+
+### Day 4 验收标准
+
+| 标准 | 要求 | Owner |
+|------|------|-------|
+| Python 环境修复 | pytest 可正常运行所有测试 | hermes + copaw |
+| 测试全通过 | pytest tests/ 全通过 | claude |
+| 覆盖率报告 | 覆盖率 >80% | claude |
+| 代码审查报告 | 架构健康度报告 | copaw |
+| Demo 脚本 | demo_sprint2.py 可运行 | hermes |
 
 ---
 
