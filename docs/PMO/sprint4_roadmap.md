@@ -37,7 +37,7 @@
 
 ## 📋 Sprint 4 Issue 拆分
 
-### Issue #44: Web UI Backend (P1)
+### Issue #49: Web UI Backend (P1)
 
 **标题**: `[feat][P1] Sprint 4 Web UI Backend`
 
@@ -63,7 +63,7 @@
 
 ---
 
-### Issue #45: Web UI Frontend (P1)
+### Issue #50: Web UI Frontend (P1)
 
 **标题**: `[feat][P1] Sprint 4 Web UI Frontend`
 
@@ -90,7 +90,7 @@
 
 ---
 
-### Issue #46: Real API Validation (P1)
+### Issue #51: Real API Validation (P1)
 
 **标题**: `[test][P1] Sprint 4 真实 API 验证`
 
@@ -117,7 +117,7 @@
 
 ---
 
-### Issue #47: MVP Release Preparation (P1)
+### Issue #52: MVP Release Preparation (P1)
 
 **标题**: `[docs][P1] Sprint 4 MVP Release 准备`
 
@@ -143,7 +143,7 @@
 
 ---
 
-### Issue #48: Sprint 4 Integration Test (P1)
+### Issue #53: Sprint 4 Integration Test (P1)
 
 **标题**: `[test][P1] Sprint 4 集成测试`
 
@@ -167,7 +167,7 @@
 
 ---
 
-### Issue #49: Sprint 5 Planning (P1)
+### Issue #54: Sprint 5 Planning (P1)
 
 **标题**: `[docs][P1] Sprint 5 规划`
 
@@ -194,17 +194,17 @@
 
 ```
 Sprint 4 (6 days, ~23h)
-├── Day 1-2: Issue #44 + #45 (Web UI)
+├── Day 1-2: Issue #49 + #50 (Web UI)
 │   ├── Backend: FastAPI + WebSocket (5h)
 │   └── Frontend: React/Vue 界面 (6h)
-├── Day 3: Issue #46 (Real API Validation)
+├── Day 3: Issue #51 (Real API Validation)
 │   ├── Kling + Runway 真实测试 (4h)
-├── Day 4: Issue #47 + #48 (MVP Prep + Integration)
+├── Day 4: Issue #52 + #53 (MVP Prep + Integration)
 │   ├── Release 准备 + 用户文档 (3h)
 │   └── 集成测试 (3h)
 ├── Day 5: Sprint Review + Demo
 │   └── MVP Demo 展示
-└── Day 6: Issue #49 (Sprint 5 Planning)
+└── Day 6: Issue #54 (Sprint 5 Planning)
     └── Sprint 5 Roadmap (2h)
 ```
 
@@ -216,7 +216,7 @@ Sprint 4 (6 days, ~23h)
 
 | Day | Issue | 任务 |
 |-----|-------|------|
-| Day 1-2 | #44, #45 | Web UI Backend + Frontend |
+| Day 1-2 | #49, #50 | Web UI Backend + Frontend |
 | Day 5 | - | MVP Demo 协助 |
 
 **总工时**: ~11h
@@ -227,7 +227,7 @@ Sprint 4 (6 days, ~23h)
 
 | Day | Issue | 任务 |
 |-----|-------|------|
-| Day 3 | #46 | Real API Validation (Kling/Runway) |
+| Day 3 | #51 | Real API Validation (Kling/Runway) |
 | Day 5 | - | MVP Demo 协助 |
 
 **总工时**: ~4h
@@ -238,8 +238,8 @@ Sprint 4 (6 days, ~23h)
 
 | Day | Issue | 任务 |
 |-----|-------|------|
-| Day 3 | #46 | Real API 测试协助 |
-| Day 4 | #48 | 集成测试 |
+| Day 3 | #51 | Real API 测试协助 |
+| Day 4 | #53 | 集成测试 |
 | Day 5 | - | Review Demo |
 
 **总工时**: ~5h
@@ -250,8 +250,8 @@ Sprint 4 (6 days, ~23h)
 
 | Day | Issue | 任务 |
 |-----|-------|------|
-| Day 4 | #47 | MVP Release 准备 |
-| Day 6 | #49 | Sprint 5 规划 |
+| Day 4 | #52 | MVP Release 准备 |
+| Day 6 | #54 | Sprint 5 规划 |
 | Day 1-6 | PM Review | PRs 审查 |
 
 **总工时**: ~5h
@@ -283,7 +283,7 @@ Sprint 4 (6 days, ~23h)
 
 ## 🚀 立即行动
 
-1. **创建 Issues #44-#49**
+1. **创建 Issues #49-#54** ✅ 已完成
 2. **分配给团队成员**
 3. **通知团队开始 Sprint 4**
 
