@@ -23,6 +23,7 @@ from cine_mate.adapters.factory import (
     register_provider,
     get_provider,
     get_primary_provider,
+    get_available_providers,
     health_check_all_providers,
     PROVIDER_REGISTRY,
 )
@@ -49,11 +50,11 @@ class MockKlingProvider:
         self.base_url = base_url or self.base_url
         self.timeout_seconds = timeout_seconds
         self.max_retries = max_retries
-        self._status = ProviderStatus.UNKNOWN
+        self._health_status = ProviderStatus.UNKNOWN
 
     @property
-    def status(self):
-        return self._status
+    def health_status(self):
+        return self._health_status
 
     async def generate_video(self, params):
         return VideoGenerationResult(
@@ -75,7 +76,7 @@ class MockKlingProvider:
         return duration_seconds * 0.20
 
     async def health_check(self):
-        self._status = ProviderStatus.HEALTHY
+        self._health_status = ProviderStatus.HEALTHY
         return True
 
     def validate_params(self, params):
@@ -100,11 +101,11 @@ class MockRunwayProvider:
         self.base_url = base_url or self.base_url
         self.timeout_seconds = timeout_seconds
         self.max_retries = max_retries
-        self._status = ProviderStatus.UNKNOWN
+        self._health_status = ProviderStatus.UNKNOWN
 
     @property
-    def status(self):
-        return self._status
+    def health_status(self):
+        return self._health_status
 
     async def generate_video(self, params):
         return VideoGenerationResult(
@@ -126,7 +127,7 @@ class MockRunwayProvider:
         return duration_seconds * 0.25
 
     async def health_check(self):
-        self._status = ProviderStatus.HEALTHY
+        self._health_status = ProviderStatus.HEALTHY
         return True
 
     def validate_params(self, params):
@@ -151,11 +152,11 @@ class MockLumaProvider:
         self.base_url = base_url or self.base_url
         self.timeout_seconds = timeout_seconds
         self.max_retries = max_retries
-        self._status = ProviderStatus.UNKNOWN
+        self._health_status = ProviderStatus.UNKNOWN
 
     @property
-    def status(self):
-        return self._status
+    def health_status(self):
+        return self._health_status
 
     async def generate_video(self, params):
         return VideoGenerationResult(
@@ -177,7 +178,7 @@ class MockLumaProvider:
         return duration_seconds * 0.30
 
     async def health_check(self):
-        self._status = ProviderStatus.HEALTHY
+        self._health_status = ProviderStatus.HEALTHY
         return True
 
     def validate_params(self, params):
@@ -344,7 +345,7 @@ class TestProviderGenerationFlow:
 
         result = await provider.generate_video(params)
 
-        assert result.is_completed()
+        assert result.is_completed
         assert result.provider == "kling"
         assert result.duration_seconds == 10
 
@@ -362,7 +363,7 @@ class TestProviderGenerationFlow:
 
         result = await provider.generate_video(params)
 
-        assert result.is_completed()
+        assert result.is_completed
 
     @pytest.mark.asyncio
     async def test_cost_estimation_flow(self):
@@ -489,7 +490,7 @@ class TestMultipleProviderComparison:
 
         # All complete successfully
         for name, result in results.items():
-            assert result.is_completed()
+            assert result.is_completed
             assert result.provider == name
 
 
@@ -551,5 +552,5 @@ class TestWorkerProviderIntegration:
 
         result = await provider.generate_video(params)
 
-        assert result.is_completed()
+        assert result.is_completed
         assert result.job_id is not None
