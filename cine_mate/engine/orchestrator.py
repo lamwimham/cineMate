@@ -51,6 +51,32 @@ class Orchestrator:
         # Event-driven state
         self._event_subscribed = False
         self._completion_event = asyncio.Event()
+    
+    async def start_event_listening(self):
+        """
+        P0 #5: Start listening for events (public method for external use).
+        
+        Subscribe to node_completed and node_failed events,
+        then start the background listener.
+        """
+        if self.event_bus and not self._event_subscribed:
+            self.event_bus.subscribe("node_completed", self._on_node_completed)
+            self.event_bus.subscribe("node_failed", self._on_node_failed)
+            await self.event_bus.start_listening()
+            self._event_subscribed = True
+            print("🎧 [Orchestrator] Event listening started.")
+    
+    async def _on_node_failed(self, event: Any):
+        """
+        P0 #5: Event callback for node failure.
+        Marks the node as failed and logs the error.
+        """
+        print(f"❌ [Event] Received node_failed for {event.node_id}")
+        if event.node_id in self.fsms:
+            self.fsms[event.node_id].state = NodeState.FAILED
+        
+        # For now, don't auto-retry. Log and wait for manual intervention.
+        # TODO: Implement retry logic based on retry_count
         
     async def _on_node_completed(self, event: NodeCompletedEvent):
         """
@@ -149,9 +175,8 @@ class Orchestrator:
         """
         print("🔄 Switching to Event-Driven Execution Mode...")
         
-        # Subscribe to node_completed events
-        await self.event_bus.subscribe("node_completed", self._on_node_completed)
-        self._event_subscribed = True
+        # Subscribe to node_completed and node_failed events (P0 #5)
+        await self.start_event_listening()
         
         # Submit initial nodes (nodes with no dependencies or all deps completed)
         initial_nodes = [
@@ -243,6 +268,18 @@ class Orchestrator:
             self.completed_nodes.add(node_id)
             print(f"[Node {node_id}] Succeeded. Output: {result}")
             
+            # P0 #4: Publish node_completed event
+            if self.event_bus:
+                from cine_mate.infra.schemas import NodeCompletedEvent
+                await self.event_bus.publish(NodeCompletedEvent(
+                    run_id=self.run.run_id,
+                    node_id=node_id,
+                    payload={
+                        "result": result,
+                        "status": "succeeded"
+                    }
+                ))
+            
         except Exception as e:
             fsm.state = NodeState.FAILED
             await self.store.upsert_node_execution(
@@ -256,6 +293,20 @@ class Orchestrator:
                 )
             )
             print(f"[Node {node_id}] Failed: {e}")
+            
+            # P0 #4: Publish node_failed event
+            if self.event_bus:
+                from cine_mate.infra.schemas import NodeFailedEvent
+                await self.event_bus.publish(NodeFailedEvent(
+                    run_id=self.run.run_id,
+                    node_id=node_id,
+                    payload={
+                        "error_code": "EXECUTION_ERROR",
+                        "error_msg": str(e),
+                        "retry_count": 0
+                    }
+                ))
+            
             raise e
 
     async def _reuse_artifacts(self, parent_run_id: str, reusable_nodes: List[str]):

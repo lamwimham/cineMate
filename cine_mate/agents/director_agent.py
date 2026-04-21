@@ -1,6 +1,8 @@
 """
 CineMate Director Agent (AgentScope 1.0)
 Task 2.3 Implementation
+
+P0 Fix: Dependency injection for model + mock_mode support (closes #4)
 """
 
 import os
@@ -22,20 +24,36 @@ PROMPT_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "prompts", "intent_v1.md")
 )
 
+
+class MockChatModel:
+    """Mock model for testing without API keys (Issue #4)"""
+    
+    def __call__(self, *args, **kwargs):
+        # Return a mock response with a simple DAG plan
+        mock_response = type('MockResponse', (), {})()
+        mock_response.content = [
+            {
+                "type": "text",
+                "text": json.dumps({
+                    "intent": "Mock video request",
+                    "nodes": [
+                        {"id": "node_script", "type": "script_gen", "parents": []},
+                        {"id": "node_image", "type": "text_to_image", "parents": ["node_script"]},
+                        {"id": "node_video", "type": "image_to_video", "parents": ["node_image"]}
+                    ]
+                })
+            }
+        ]
+        return mock_response
+
+
 def load_system_prompt() -> str:
     """Load the intent parsing prompt template."""
     try:
         with open(PROMPT_PATH, 'r') as f:
             content = f.read()
-            # Extract the prompt inside the code blocks if necessary, or return full
-            # The file structure has "## System Prompt" followed by a code block.
-            # We should extract that block to avoid cluttering the context with metadata.
             start_marker = "```\n"
             end_marker = "```"
-            
-            # Simple extraction logic
-            # The prompt starts after the first occurrence of "## System Prompt"
-            # Let's look for the content inside the markdown block
             
             if "## System Prompt" in content:
                 prompt_part = content.split("## System Prompt")[1]
@@ -49,10 +67,13 @@ def load_system_prompt() -> str:
         print(f"Warning: Could not load prompt file. Using fallback. Error: {e}")
         return "You are a helpful assistant."
 
+
 class DirectorAgent(ReActAgent):
     """
     The main Director Agent for CineMate.
     Responsible for parsing user intent, planning DAGs, and controlling the Engine.
+    
+    P0 Fix: Supports dependency injection for model and mock_mode for testing.
     """
 
     def __init__(
@@ -61,22 +82,14 @@ class DirectorAgent(ReActAgent):
         model_name: str = "qwen-max",
         api_key: Optional[str] = None,
         engine_tools: Optional[EngineTools] = None,
-        use_mock: bool = False
+        use_mock: bool = False,
+        model=None  # P0 #1: Dependency injection for model
     ):
-        # 1. Setup Model
+        # 1. Setup Model (P0 #1: Dependency injection + Issue #4: mock_mode)
         if use_mock:
-            # For testing without API keys
-            model_config = {
-                "model_type": "post_api_chat",
-                "config_name": "mock_model",
-                "api_url": "http://mock-api", 
-                "headers": {},
-                "messages_key": "messages"
-            }
-            # We need to mock this or use a placeholder. 
-            # For now, let's just require a real model or raise if needed.
-            # In a real test, we might inject a mock model.
-            raise NotImplementedError("Mock model implementation pending. Please provide API Key.")
+            model = MockChatModel()
+        elif model is not None:
+            pass  # Use injected model
         else:
             # Default to DashScope (Qwen) as per project config
             model = DashScopeChatModel(
