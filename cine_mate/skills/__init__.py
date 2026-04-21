@@ -6,6 +6,7 @@ from cine_mate.skills.models import (
 )
 from cine_mate.skills.skill_store import SkillStore
 from cine_mate.skills.skill_indexer import SkillIndexer
+from cine_mate.skills.skill_loader import SkillLoader
 
 __all__ = [
     "SkillMetadata",
@@ -15,4 +16,5 @@ __all__ = [
     "SkillStatus",
     "SkillStore",
     "SkillIndexer",
+    "SkillLoader",
 ]
