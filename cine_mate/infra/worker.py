@@ -4,10 +4,14 @@ RQ Worker - Executes Async Jobs
 Worker process that pulls jobs from the queue and executes them.
 For video generation, this calls upstream APIs (Kling, Runway, etc.).
 
+IMPORTANT (Issue #7 Fix):
+    Worker uses SYNC Redis Pub/Sub to publish events.
+    RQ requires sync functions, so we bypass async EventBus.
+
 Usage:
     # Start worker process
     $ python -m cine_mate.infra.worker
-    
+
     # Or with rq CLI
     $ rq worker cine_mate.infra.worker.execute_job
 """
@@ -15,24 +19,48 @@ Usage:
 import json
 import traceback
 from typing import Dict, Any
+from datetime import datetime
 
 import redis
 from rq import get_current_job
 
 from cine_mate.infra.schemas import JobStatus
-from cine_mate.infra.event_bus import EventBus, publish_node_completed, publish_node_failed
 
 
-# Global event bus instance
-_event_bus = None
+# Redis Pub/Sub channel names (match EventBus pattern)
+CHANNEL_NODE_COMPLETED = "cinemate:node_completed"
+CHANNEL_NODE_FAILED = "cinemate:node_failed"
 
 
-def get_event_bus(redis_url: str = "redis://localhost:6379") -> EventBus:
-    """Get or create global EventBus instance"""
-    global _event_bus
-    if _event_bus is None:
-        _event_bus = EventBus(redis_url)
-    return _event_bus
+def _publish_event_sync(
+    redis_conn: redis.Redis,
+    channel: str,
+    event_type: str,
+    run_id: str,
+    node_id: str,
+    payload: Dict[str, Any]
+):
+    """
+    Publish event via Redis Pub/Sub (SYNC version for Worker).
+
+    Issue #7 Fix: Bypass async EventBus, use sync Redis directly.
+
+    Args:
+        redis_conn: Redis connection (from RQ)
+        channel: Pub/Sub channel name
+        event_type: Event type string
+        run_id: Pipeline run ID
+        node_id: DAG node ID
+        payload: Event payload dict
+    """
+    message = {
+        "event_type": event_type,
+        "run_id": run_id,
+        "node_id": node_id,
+        "timestamp": datetime.utcnow().isoformat(),
+        "payload": payload
+    }
+    redis_conn.publish(channel, json.dumps(message))
 
 
 def execute_job(job_id: str):
@@ -76,24 +104,26 @@ def execute_job(job_id: str):
                 "result": json.dumps(result),
             }
         )
-        
-        # Publish node_completed event (会议决议：Event-Driven)
-        event_bus = get_event_bus()
-        import asyncio
-        asyncio.run(publish_node_completed(
-            event_bus=event_bus,
+
+        # Publish node_completed event (Issue #7 Fix: Use sync Redis Pub/Sub)
+        _publish_event_sync(
+            redis_conn=redis_conn,
+            channel=CHANNEL_NODE_COMPLETED,
+            event_type="node_completed",
             run_id=run_id,
             node_id=node_id,
-            artifact_hash=result.get("artifact_hash", ""),
-            output_url=result.get("output_url", ""),
-            cost=result.get("cost", 0.0)
-        ))
-        
+            payload={
+                "artifact_hash": result.get("artifact_hash", ""),
+                "output_url": result.get("output_url", ""),
+                "cost": result.get("cost", 0.0)
+            }
+        )
+
         print(f"[Worker] Job {job_id} completed successfully")
         
     except Exception as e:
         print(f"[Worker] Job {job_id} failed: {e}")
-        
+
         # Update job status in Redis
         tb = traceback.format_exc()
         redis_conn.hset(
@@ -104,22 +134,25 @@ def execute_job(job_id: str):
                 "error_traceback": tb,
             }
         )
-        
-        # Publish node_failed event
+
+        # Publish node_failed event (Issue #7 Fix: Use sync Redis Pub/Sub)
         try:
             job_data = redis_conn.hgetall(job_key)
-            event_bus = get_event_bus()
-            asyncio.run(publish_node_failed(
-                event_bus=event_bus,
+            _publish_event_sync(
+                redis_conn=redis_conn,
+                channel=CHANNEL_NODE_FAILED,
+                event_type="node_failed",
                 run_id=job_data.get("run_id"),
                 node_id=job_data.get("node_id"),
-                error_code="EXECUTION_ERROR",
-                error_msg=str(e),
-                retry_count=0
-            ))
+                payload={
+                    "error_code": "EXECUTION_ERROR",
+                    "error_msg": str(e),
+                    "retry_count": 0
+                }
+            )
         except Exception as event_error:
             print(f"[Worker] Failed to publish error event: {event_error}")
-        
+
         # Re-raise to let RQ handle retry logic
         raise
 
