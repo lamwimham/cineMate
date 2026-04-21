@@ -59,9 +59,9 @@ class MockVideoProvider(BaseVideoProvider):
             video_url=None,
             thumbnail_url=None,
             cost=0.0,  # Free
-            duration=duration,
+            duration_seconds=duration,
             resolution=resolution,
-            extra={"mode": mode, "prompt": prompt, "provider": "mock"},
+            metadata={"mode": mode, "prompt": prompt, "provider": "mock"},
         )
         
         self._jobs[job_id] = {
@@ -81,9 +81,9 @@ class MockVideoProvider(BaseVideoProvider):
             video_url=self.MOCK_VIDEO_URL,
             thumbnail_url=self.MOCK_THUMBNAIL_URL,
             cost=0.0,
-            duration=duration,
+            duration_seconds=duration,
             resolution=resolution,
-            extra={"mode": mode, "prompt": prompt, "provider": "mock"},
+            metadata={"mode": mode, "prompt": prompt, "provider": "mock"},
         )
         
         return result

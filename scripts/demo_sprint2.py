@@ -124,7 +124,7 @@ async def demo_text_to_video():
         print(f"\n  [Step 4] Result:")
         print(f"    video_url: {final.video_url}")
         print(f"    thumbnail: {final.thumbnail_url}")
-        print(f"    duration:  {final.duration}s")
+        print(f"    duration:  {final.duration_seconds}s")
 
     print(f"\n  ✅ text_to_video flow completed.")
 
@@ -154,14 +154,14 @@ async def demo_image_to_video():
         image_url=image_url
     )
     print(f"    job_id: {result.job_id}")
-    print(f"    mode: {result.extra.get('mode', 'unknown')}")
+    print(f"    mode: {result.metadata.get('mode', 'unknown')}")
 
     # Step 2: Get result
     final = await provider.get_result(result.job_id)
     if final:
         print(f"\n  [Step 2] Result:")
         print(f"    video_url: {final.video_url}")
-        print(f"    mode: {final.extra.get('mode', 'unknown')}")
+        print(f"    mode: {final.metadata.get('mode', 'unknown')}")
 
     print(f"\n  ✅ image_to_video flow completed.")
 
@@ -191,6 +191,7 @@ async def demo_generate_and_wait():
     print(f"\n  Completed in {elapsed:.1f}s:")
     print(f"    video_url: {result.video_url}")
     print(f"    status:    {result.status}")
+    print(f"    duration:  {result.duration_seconds}s")
     print(f"    cost:      ${result.cost:.2f}")
 
     print(f"\n  ✅ generate_and_wait completed.")
