@@ -364,3 +364,67 @@ class Store:
                     ))
                 return results
 
+    # --- Video Git: List Operations ---
+
+    async def list_runs(self, limit: int = 50, branch: Optional[str] = None) -> list['PipelineRun']:
+        """List recent PipelineRuns, optionally filtered by branch."""
+        query = "SELECT * FROM pipeline_runs"
+        params: list = []
+        if branch:
+            query += " WHERE branch_name = ?"
+            params.append(branch)
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(query, params) as cursor:
+                rows = await cursor.fetchall()
+
+        from cine_mate.core.models import PipelineRun, RunStatus
+        results = []
+        for row in rows:
+            results.append(PipelineRun(
+                run_id=row["run_id"],
+                parent_run_id=row["parent_run_id"],
+                branch_name=row["branch_name"],
+                commit_msg=row["commit_msg"],
+                status=RunStatus(row["status"]),
+                dag_snapshot=json.loads(row["dag_snapshot"]) if row["dag_snapshot"] else None,
+                trace_id=row["trace_id"],
+                root_hash=row["root_hash"],
+                created_at=datetime.fromisoformat(row["created_at"]),
+            ))
+        return results
+
+    async def list_node_executions_for_run(self, run_id: str) -> list['NodeExecution']:
+        """List all node executions for a specific run."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM node_executions WHERE run_id = ? ORDER BY started_at",
+                (run_id,)
+            ) as cursor:
+                rows = await cursor.fetchall()
+
+        from cine_mate.core.models import NodeExecution, NodeStatus, NodeConfig
+        results = []
+        for row in rows:
+            config_data = json.loads(row["config_snapshot"]) if row["config_snapshot"] else None
+            config = NodeConfig(**config_data) if config_data else None
+            results.append(NodeExecution(
+                id=row["id"],
+                run_id=row["run_id"],
+                node_id=row["node_id"],
+                status=NodeStatus(row["status"]),
+                retry_count=row["retry_count"],
+                external_api_provider=row["external_api_provider"],
+                external_job_id=row["external_job_id"],
+                error_msg=row["error_msg"],
+                error_traceback=row["error_traceback"],
+                started_at=datetime.fromisoformat(row["started_at"]) if row["started_at"] else None,
+                completed_at=datetime.fromisoformat(row["completed_at"]) if row["completed_at"] else None,
+                config_snapshot=config,
+            ))
+        return results
+
