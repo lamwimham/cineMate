@@ -12,21 +12,21 @@
 
 | Issue # | 标题 | 助手 | 预估工时 | 交付物 |
 |---------|------|------|----------|--------|
-| Issue #18 | Python 环境修复 - pytest 无法导入 networkx | Hermes + Copaw | 1h | venv 配置完成 |
+| Issue #18 | `[fix][P0] 修复Python环境问题 - pytest无法导入networkx` | Hermes + Copaw | 1h | venv 配置完成 |
 
 ### 🟡 P1 级 Issues (重要但非阻塞)
 
 | Issue # | 标题 | 助手 | 预估工时 | 交付物 |
 |---------|------|------|----------|--------|
-| Issue #19 | Sprint 2 测试覆盖率报告 | Claude | 1.5h | docs/testing/sprint2_coverage_report.md |
-| Issue #20 | Sprint 2 整体代码审查报告 | Copaw | 2h | docs/PMO/sprint2_code_review.md |
+| Issue #19 | `[test][P1] 生成Sprint2测试覆盖率报告` | Claude | 1.5h | docs/testing/sprint2_coverage_report.md |
+| Issue #20 | `[docs][P1] Sprint2整体代码审查报告` | Copaw | 2h | docs/PMO/sprint2_code_review.md |
 
 ### 🟢 P2 级 Issues (可选/优化)
 
 | Issue # | 标题 | 助手 | 预估工时 | 交付物 |
 |---------|------|------|----------|--------|
-| Issue #21 | Sprint 2 Demo 脚本准备 | Hermes | 1h | scripts/demo_sprint2.py |
-| Issue #22 | Sprint 2 Demo 流程文档 | Hermes | 0.5h | docs/demo/sprint2_demo_guide.md |
+| Issue #21 | `[feat][P2] 创建Sprint2演示脚本` | Hermes | 1h | scripts/demo_sprint2.py |
+| Issue #22 | `[docs][P2] 创建Sprint2演示流程文档` | Hermes | 0.5h | docs/demo/sprint2_demo_guide.md |
 
 ---
 
@@ -75,7 +75,7 @@
 
 ### Issue #18: Python 环境修复 (🔴 P0)
 
-**标题**: `P0: Fix Python environment - pytest cannot import networkx`
+**标题**: `[fix][P0] 修复Python环境问题 - pytest无法导入networkx`
 
 **助手**: Hermes + Copaw
 
@@ -96,7 +96,7 @@
 
 ### Issue #19: 测试覆盖率报告 (🟡 P1)
 
-**标题**: `P1: Generate Sprint 2 test coverage report`
+**标题**: `[test][P1] 生成Sprint2测试覆盖率报告`
 
 **助手**: Claude
 
@@ -117,7 +117,7 @@
 
 ### Issue #20: 整体代码审查报告 (🟡 P1)
 
-**标题**: `P1: Sprint 2 comprehensive code review`
+**标题**: `[docs][P1] Sprint2整体代码审查报告`
 
 **助手**: Copaw
 
@@ -144,7 +144,7 @@
 
 ### Issue #21: Demo 脚本准备 (🟢 P2)
 
-**标题**: `P2: Create Sprint 2 demo script`
+**标题**: `[feat][P2] 创建Sprint2演示脚本`
 
 **助手**: Hermes
 
@@ -168,7 +168,7 @@
 
 ### Issue #22: Demo 流程文档 (🟢 P2)
 
-**标题**: `P2: Create Sprint 2 demo guide document`
+**标题**: `[docs][P2] 创建Sprint2演示流程文档`
 
 **助手**: Hermes
 
@@ -194,11 +194,11 @@
 
 | Issue | 标题 | 助手 | 优先级 | 依赖 |
 |-------|------|------|--------|------|
-| #18 | Python 环境修复 | Hermes + Copaw | 🔴 P0 | 无 |
-| #19 | 测试覆盖率报告 | Claude | 🟡 P1 | #18 |
-| #20 | 代码审查报告 | Copaw | 🟡 P1 | #18 |
-| #21 | Demo 脚本 | Hermes | 🟢 P2 | #18 |
-| #22 | Demo 文档 | Hermes | 🟢 P2 | #21 |
+| #18 | `[fix][P0] 修复Python环境问题` | Hermes + Copaw | 🔴 P0 | 无 |
+| #19 | `[test][P1] 生成Sprint2测试覆盖率报告` | Claude | 🟡 P1 | #18 |
+| #20 | `[docs][P1] Sprint2整体代码审查报告` | Copaw | 🟡 P1 | #18 |
+| #21 | `[feat][P2] 创建Sprint2演示脚本` | Hermes | 🟢 P2 | #18 |
+| #22 | `[docs][P2] 创建Sprint2演示流程文档` | Hermes | 🟢 P2 | #21 |
 
 **依赖关系**:
 - Issue #18 (P0) 必须先完成
@@ -226,19 +226,57 @@
 
 ## 🔄 PR → Issue 关联
 
+### PR 标题格式（Conventional Commits）
+
+每个 PR 需要按照 Conventional Commits 格式：
+
+```bash
+<type>(<scope>): <subject>
+```
+
+### Issue → PR 标题对照表
+
+| Issue | Issue 标题 | PR 标题 |
+|-------|------------|---------|
+| #18 | `[fix][P0] 修复Python环境问题` | `fix(env): configure project-level venv for pytest` |
+| #19 | `[test][P1] 生成Sprint2测试覆盖率报告` | `test(coverage): generate sprint2 coverage report` |
+| #20 | `[docs][P1] Sprint2整体代码审查报告` | `docs(review): add sprint2 code review report` |
+| #21 | `[feat][P2] 创建Sprint2演示脚本` | `feat(demo): create sprint2 demo script` |
+| #22 | `[docs][P2] 创建Sprint2演示流程文档` | `docs(demo): create sprint2 demo guide` |
+
+### PR 描述模板
+
 每个 PR 需要在描述中关联 Issue：
 
 ```markdown
+## Type of change
+
+- [ ] feat: 新功能
+- [ ] fix: Bug修复
+- [ ] docs: 文档更新
+- [ ] test: 测试
+- [ ] chore: 构建/工具
+
+## Description
+
+<type>(<scope>): <subject>
+
+[简要描述变更内容]
+
 ## Related Issue
 
-Fixes #5
+Closes #xxx
 
-## Summary
+## 助手
 
-- 修复 Python 环境 mismatch
-- 创建项目级 venv
-- 安装 pyproject.toml 依赖
-- pytest tests/ 全通过
+**开发者**: Hermes / Copaw / Claude
+
+## Checklist
+
+- [ ] 代码符合规范
+- [ ] 添加/更新测试
+- [ ] 更新文档
+- [ ] 本地测试通过
 ```
 
 合并 PR 后，Issue 自动关闭。
