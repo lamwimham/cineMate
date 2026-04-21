@@ -4,6 +4,7 @@ Task 2.3 Implementation
 
 P0 Fix: Dependency injection for model + mock_mode support (closes #4)
 Sprint 2: Real DashScope API call + API Key validation
+Sprint 3: Skill System integration (progressive disclosure via SkillLoader)
 """
 
 import os
@@ -78,6 +79,7 @@ class DirectorAgent(ReActAgent):
     - Mock mode for testing (no API key)
     - Real DashScope API call (default)
     - API Key validation at init time
+    - Skill System integration (progressive disclosure)
     """
 
     def __init__(
@@ -87,7 +89,9 @@ class DirectorAgent(ReActAgent):
         api_key: Optional[str] = None,
         engine_tools: Optional[EngineTools] = None,
         use_mock: bool = False,
-        model=None  # Dependency injection for model
+        model=None,  # Dependency injection for model
+        skill_indexer=None,   # SkillIndexer for system prompt injection
+        skill_loader=None,    # SkillLoader for on-demand content loading
     ):
         # 1. Setup Model (Priority: injected model > use_mock > default)
         if model is not None:
@@ -108,8 +112,27 @@ class DirectorAgent(ReActAgent):
                 api_key=resolved_api_key,
             )
 
-        # 2. Load System Prompt
+        # 2. Load System Prompt (with optional skill index injection)
         sys_prompt = load_system_prompt()
+        self._skill_loader = skill_loader  # Store for async inject_skills
+
+        if skill_indexer:
+            # Note: Skill index injection is done async via inject_skills()
+            # to avoid event loop conflicts when called from async context.
+            # If called synchronously, we try best-effort.
+            import asyncio
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in async context — store for later injection
+                self._pending_skill_indexer = skill_indexer
+            except RuntimeError:
+                # No running loop — safe to run sync
+                try:
+                    index_entries = asyncio.run(skill_indexer.scan())
+                    skill_section = skill_indexer.format_for_prompt(index_entries)
+                    sys_prompt = f"{sys_prompt}\n\n{skill_section}"
+                except Exception as e:
+                    print(f"Warning: Could not load skill index. Error: {e}")
 
         # 3. Setup Toolkit
         toolkit = None
@@ -121,6 +144,11 @@ class DirectorAgent(ReActAgent):
             toolkit.register_tool_function(engine_tools.get_run_list)
             toolkit.register_tool_function(engine_tools.submit_plan)
 
+            # Register load_skill tool if skill_loader is provided
+            if skill_loader:
+                from cine_mate.agents.tools.skill_tool import make_load_skill_tool
+                toolkit.register_tool_function(make_load_skill_tool(skill_loader))
+
         # 4. Initialize ReActAgent
         super().__init__(
             name=name,
@@ -130,3 +158,23 @@ class DirectorAgent(ReActAgent):
             toolkit=toolkit,
             memory=InMemoryMemory(),
         )
+    
+    async def inject_skills(self):
+        """
+        Inject skill index into system prompt (async-safe).
+        
+        Call this after agent creation when skill_indexer was provided
+        but couldn't be injected during __init__ due to event loop conflicts.
+        """
+        indexer = getattr(self, '_pending_skill_indexer', None)
+        if indexer is None:
+            return
+        
+        try:
+            index_entries = await indexer.scan()
+            skill_section = indexer.format_for_prompt(index_entries)
+            # _sys_prompt is the internal storage (sys_prompt is read-only property)
+            self._sys_prompt = f"{self._sys_prompt}\n\n{skill_section}"
+            del self._pending_skill_indexer
+        except Exception as e:
+            print(f"Warning: Could not inject skills. Error: {e}")
