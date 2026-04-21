@@ -1,12 +1,12 @@
 """
 CineMate Pipeline Orchestrator
 Ties together DAG, FSM, and Store to execute the pipeline.
-Supports incremental execution (Video Git).
+Supports incremental execution (Video Git) and Event-Driven dependencies.
 """
 
 import asyncio
 import uuid
-from typing import List, Set, Dict, Optional, Callable, Awaitable
+from typing import List, Set, Dict, Optional, Callable, Awaitable, Any
 
 from cine_mate.core.models import (
     PipelineRun, NodeExecution, NodeStatus, RunStatus, NodeConfig, ApiMode
@@ -14,6 +14,7 @@ from cine_mate.core.models import (
 from cine_mate.core.store import Store
 from cine_mate.engine.dag import PipelineDAG
 from cine_mate.engine.fsm import NodeFSM, NodeState
+from cine_mate.infra.schemas import NodeCompletedEvent
 
 # Type alias for node execution function
 NodeExecutorFn = Callable[[str, Dict], Awaitable[Dict]]
@@ -21,6 +22,7 @@ NodeExecutorFn = Callable[[str, Dict], Awaitable[Dict]]
 class Orchestrator:
     """
     Orchestrates the execution of a PipelineRun.
+    Supports both direct execution and Event-Driven mode.
     """
     
     def __init__(
@@ -28,12 +30,14 @@ class Orchestrator:
         store: Store, 
         run: PipelineRun, 
         dag: PipelineDAG,
-        executor_fn: NodeExecutorFn
+        executor_fn: NodeExecutorFn,
+        event_bus: Optional[Any] = None  # EventBus instance for event-driven mode
     ):
         self.store = store
         self.run = run
         self.dag = dag
         self.executor_fn = executor_fn
+        self.event_bus = event_bus
         
         # Initialize FSMs for all nodes
         self.fsms: Dict[str, NodeFSM] = {
@@ -44,10 +48,51 @@ class Orchestrator:
         # Track completed nodes in this run
         self.completed_nodes: Set[str] = set()
         
+        # Event-driven state
+        self._event_subscribed = False
+        self._completion_event = asyncio.Event()
+        
+    async def _on_node_completed(self, event: NodeCompletedEvent):
+        """
+        事件回调：节点完成后触发下游 (参考文档方案)
+        
+        This method is called when a node execution completes and publishes 
+        a node_completed event to the EventBus.
+        """
+        self.completed_nodes.add(event.node_id)
+        print(f"🎧 [Event] Received node_completed for {event.node_id}")
+        
+        # 找到下游节点
+        children = list(self.dag.graph.successors(event.node_id))
+        
+        for child_id in children:
+            # 检查所有父节点是否完成
+            parents = list(self.dag.graph.predecessors(child_id))
+            if all(p in self.completed_nodes for p in parents):
+                print(f"🚀 [Event] Triggering downstream node: {child_id}")
+                await self._submit_node(child_id)
+        
+        # 检查是否所有节点都完成了
+        if len(self.completed_nodes) == len(self.dag.graph.nodes()):
+            self._completion_event.set()
+            
+    async def _submit_node(self, node_id: str):
+        """Submit a single node for execution."""
+        if node_id in self.completed_nodes:
+            return
+            
+        self.fsms[node_id].transition("schedule")
+        self.fsms[node_id].transition("start")
+        
+        task = asyncio.create_task(self._execute_node(node_id))
+        await task
+        
     async def execute(self):
         """
         Execute the pipeline.
-        If this is a replay (parent_run_id exists), it will reuse artifacts.
+        Supports two modes:
+        1. Event-Driven Mode (if event_bus is provided)
+        2. Direct Execution Mode (default)
         """
         await self.store.create_run(self.run)
         self.run.status = RunStatus.RUNNING
@@ -56,42 +101,6 @@ class Orchestrator:
         changed_nodes = set()
         
         if self.run.parent_run_id:
-            # Load parent run to compare configs
-            # For this MVP, we assume the DAG structure is the same, only configs change.
-            # We compare current DAG configs with what we *think* the parent had.
-            # Ideally, we would store parent DAG configs in DB, but for now we compare against
-            # the current DAG if we assume the "change" is what triggered the new run.
-            
-            # Heuristic for MVP:
-            # If a node config differs from "default" (or if we explicitly mark it), it's dirty.
-            # But a better way: The Orchestrator is passed the *new* DAG.
-            # We need to know what the *old* DAG looked like.
-            # Let's assume the Orchestrator receives the *changed* nodes in its constructor or 
-            # we detect changes by checking if parent artifacts exist.
-            
-            # Simpler approach for MVP: 
-            # Check if parent artifact exists. If not, it's dirty.
-            # But we need to know if the config CHANGED.
-            # Since we don't have full history storage of configs yet, 
-            # let's add a `changed_nodes` parameter to the Orchestrator.
-            pass 
-        else:
-            # Fresh run: everything is dirty
-            changed_nodes = set(self.dag.graph.nodes())
-            
-        # Temporary Fix for Test: 
-        # In a real app, we'd compare configs. Here we just assume the test passed the right DAG.
-        # We will implement a basic diff check.
-        
-        # Check each node: if its config is different from "expected" (hardcoded or DB stored)
-        # For now, let's look at the `dag.node_configs`.
-        # If parent_run exists, we fetch parent artifacts. 
-        # If parent artifact exists AND config matches (somehow), reuse.
-        # Since we can't easily match config without history, let's assume the Caller tells us 
-        # or we mark nodes.
-        
-        # IMPROVEMENT: Let's check if we can fetch parent node execution config.
-        if self.run.parent_run_id:
             for node_id in self.dag.graph.nodes():
                 current_config = self.dag.node_configs.get(node_id, {})
                 parent_exec = await self.store.get_node_execution(self.run.parent_run_id, node_id)
@@ -99,11 +108,6 @@ class Orchestrator:
                 if parent_exec and parent_exec.config_snapshot:
                     parent_config = parent_exec.config_snapshot.model_dump(exclude_unset=True)
                     current_config_clean = {k: v for k, v in current_config.items() if v is not None}
-                    
-                    # DEBUG
-                    print(f"  [Diff Check] Node {node_id}:")
-                    print(f"    Parent: {parent_config}")
-                    print(f"    Current: {current_config_clean}")
                     
                     if parent_config == current_config_clean:
                         pass # Reuse
@@ -117,7 +121,6 @@ class Orchestrator:
         impact = self.dag.analyze_impact(changed_nodes)
         
         # 2. Process Reusable Nodes
-        # If this is a child run, we copy artifacts from parent
         if self.run.parent_run_id:
             await self._reuse_artifacts(self.run.parent_run_id, impact["reusable_nodes"])
             for node_id in impact["reusable_nodes"]:
@@ -134,6 +137,44 @@ class Orchestrator:
                 print(f"[Reuse] Node {node_id} reused from parent.")
 
         # 3. Execute Dirty Nodes
+        if self.event_bus and not self._event_subscribed:
+            await self._execute_event_driven(impact["dirty_nodes"])
+        else:
+            await self._execute_direct(impact["dirty_nodes"])
+            
+    async def _execute_event_driven(self, dirty_nodes: Set[str]):
+        """
+        Event-Driven Execution Mode.
+        Submits nodes and waits for node_completed events to trigger downstream nodes.
+        """
+        print("🔄 Switching to Event-Driven Execution Mode...")
+        
+        # Subscribe to node_completed events
+        await self.event_bus.subscribe("node_completed", self._on_node_completed)
+        self._event_subscribed = True
+        
+        # Submit initial nodes (nodes with no dependencies or all deps completed)
+        initial_nodes = [
+            n for n in dirty_nodes 
+            if not list(self.dag.graph.predecessors(n)) or 
+            all(p in self.completed_nodes for p in self.dag.graph.predecessors(n))
+        ]
+        
+        print(f"📤 Submitting initial nodes: {initial_nodes}")
+        for node_id in initial_nodes:
+            await self._submit_node(node_id)
+            
+        # Wait for all nodes to complete
+        if len(self.completed_nodes) < len(self.dag.graph.nodes()):
+            print("⏳ Waiting for all nodes to complete via events...")
+            await self._completion_event.wait()
+            
+        self.run.status = RunStatus.COMPLETED
+        await self.store.update_run_status(self.run.run_id, RunStatus.COMPLETED)
+        print(f"[Run {self.run.run_id}] Completed successfully (Event-Driven).")
+        
+    async def _execute_direct(self, dirty_nodes: Set[str]):
+        """Direct Execution Mode (original behavior)."""
         while True:
             ready_nodes = self.dag.get_ready_nodes(self.completed_nodes)
             
@@ -163,8 +204,6 @@ class Orchestrator:
             for res in results:
                 if isinstance(res, Exception):
                     print(f"[Error] {res}")
-                    # Handle error: mark run as failed?
-                    # For now, just log
                     
     async def _execute_node(self, node_id: str):
         """Execute a single node with FSM and Store updates."""
