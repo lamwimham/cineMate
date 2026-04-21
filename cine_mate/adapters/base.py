@@ -19,6 +19,14 @@ import asyncio
 
 
 class ProviderStatus(str, Enum):
+    """Status of a video generation job."""
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class ProviderHealthStatus(str, Enum):
     """Provider health status"""
     HEALTHY = "healthy"
     DEGRADED = "degraded"
@@ -37,7 +45,7 @@ class VideoGenerationMode(str, Enum):
 class VideoGenerationResult:
     """Result from video generation"""
     job_id: str
-    status: str  # "processing", "completed", "failed"
+    status: str  # "pending", "processing", "completed", "failed"
     video_url: Optional[str] = None
     thumbnail_url: Optional[str] = None
     cost: float = 0.0
@@ -48,229 +56,31 @@ class VideoGenerationResult:
     completed_at: Optional[datetime] = None
     error_message: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
+    @property
     def is_completed(self) -> bool:
-        return self.status == "completed" and self.video_url is not None
-    
+        return self.status == ProviderStatus.COMPLETED
+
+    @property
     def is_failed(self) -> bool:
-        return self.status == "failed" or self.error_message is not None
+        return self.status == ProviderStatus.FAILED or self.error_message is not None
 
 
 @dataclass
 class GenerationParams:
     """Parameters for video generation"""
-    # Core
     prompt: str
     negative_prompt: Optional[str] = None
-    
-    # Video settings
     duration_seconds: int = 10
     resolution: str = "720p"
     fps: int = 30
-    
-    # Generation mode
     mode: VideoGenerationMode = VideoGenerationMode.TEXT_TO_VIDEO
-    
-    # Input for image/video to video
     image_url: Optional[str] = None
     video_url: Optional[str] = None
-    
-    # Advanced
     seed: Optional[int] = None
     guidance_scale: float = 7.5
     num_inference_steps: int = 50
-    
-    # Provider-specific overrides
     extra_params: Dict[str, Any] = field(default_factory=dict)
-
-
-class BaseVideoProvider(ABC):
-    """
-    Abstract base class for all video generation providers.
-    
-    Implementations:
-    - KlingProvider (ByteDance)
-    - RunwayProvider (Runway ML)
-    - LumaProvider (Luma AI)
-    
-    Usage:
-        provider = KlingProvider(api_key="xxx")
-        result = await provider.generate_video(
-            prompt="A cinematic shot of...",
-            duration_seconds=10
-        )
-    """
-    
-    # Class-level configuration
-    provider_name: str = "base"
-    supported_modes: List[VideoGenerationMode] = []
-    max_duration_seconds: int = 60
-    min_duration_seconds: int = 1
-    
-    def __init__(
-        self,
-        api_key: str,
-        base_url: str,
-        timeout_seconds: int = 300,
-        max_retries: int = 3
-    ):
-        """
-        Initialize provider.
-        
-        Args:
-            api_key: API key for authentication
-            base_url: Base URL for API endpoints
-            timeout_seconds: Request timeout
-            max_retries: Maximum retry attempts
-        """
-        self.api_key = api_key
-        self.base_url = base_url
-        self.timeout_seconds = timeout_seconds
-        self.max_retries = max_retries
-        self._status = ProviderStatus.UNKNOWN
-    
-    @property
-    def status(self) -> ProviderStatus:
-        """Get current provider health status"""
-        return self._status
-    
-    @abstractmethod
-    async def generate_video(
-        self,
-        params: GenerationParams
-    ) -> VideoGenerationResult:
-        """
-        Generate video from prompt or image.
-        
-        Args:
-            params: Generation parameters
-        
-        Returns:
-            VideoGenerationResult with job_id and status
-        
-        Raises:
-            ProviderError: If generation fails
-        """
-        pass
-    
-    @abstractmethod
-    async def get_job_status(self, job_id: str) -> str:
-        """
-        Get status of a generation job.
-        
-        Args:
-            job_id: Job identifier
-        
-        Returns:
-            Status string: "processing", "completed", "failed"
-        """
-        pass
-    
-    @abstractmethod
-    async def cancel_job(self, job_id: str) -> bool:
-        """
-        Cancel a running job.
-        
-        Args:
-            job_id: Job identifier
-        
-        Returns:
-            True if cancelled, False otherwise
-        """
-        pass
-    
-    @abstractmethod
-    def estimate_cost(
-        self,
-        duration_seconds: int,
-        resolution: str = "720p",
-        mode: VideoGenerationMode = VideoGenerationMode.TEXT_TO_VIDEO
-    ) -> float:
-        """
-        Estimate cost for video generation.
-        
-        Args:
-            duration_seconds: Video duration
-            resolution: Output resolution
-            mode: Generation mode
-        
-        Returns:
-            Estimated cost in USD
-        """
-        pass
-    
-    async def health_check(self) -> bool:
-        """
-        Check provider health.
-        
-        Returns:
-            True if healthy, False otherwise
-        """
-        try:
-            # Implement provider-specific health check
-            self._status = ProviderStatus.HEALTHY
-            return True
-        except Exception:
-            self._status = ProviderStatus.UNHEALTHY
-            return False
-    
-    def validate_params(self, params: GenerationParams) -> None:
-        """
-        Validate generation parameters.
-        
-        Args:
-            params: Parameters to validate
-        
-        Raises:
-            ValueError: If parameters are invalid
-        """
-        # Duration validation
-        if params.duration_seconds < self.min_duration_seconds:
-            raise ValueError(
-                f"Duration must be at least {self.min_duration_seconds}s"
-            )
-        if params.duration_seconds > self.max_duration_seconds:
-            raise ValueError(
-                f"Duration must be at most {self.max_duration_seconds}s"
-            )
-        
-        # Mode validation
-        if params.mode not in self.supported_modes:
-            raise ValueError(
-                f"Mode {params.mode} not supported. "
-                f"Supported: {self.supported_modes}"
-            )
-        
-        # Input validation based on mode
-        if params.mode == VideoGenerationMode.IMAGE_TO_VIDEO:
-            if not params.image_url:
-                raise ValueError("image_url required for image-to-video mode")
-        
-        if params.mode == VideoGenerationMode.VIDEO_TO_VIDEO:
-            if not params.video_url:
-                raise ValueError("video_url required for video-to-video mode")
-    
-    def _get_auth_headers(self) -> Dict[str, str]:
-        """Get authentication headers"""
-        return {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-    
-    async def _retry_request(self, func, *args, **kwargs):
-        """Retry a request with exponential backoff"""
-        last_error = None
-        
-        for attempt in range(self.max_retries):
-            try:
-                return await func(*args, **kwargs)
-            except Exception as e:
-                last_error = e
-                if attempt < self.max_retries - 1:
-                    wait_time = (2 ** attempt) * 1.0  # Exponential backoff
-                    await asyncio.sleep(wait_time)
-        
-        raise last_error
 
 
 class ProviderError(Exception):
@@ -291,3 +101,180 @@ class ProviderRateLimitError(ProviderError):
 class ProviderTimeoutError(ProviderError):
     """Request timeout"""
     pass
+
+
+class BaseVideoProvider(ABC):
+    """
+    Abstract base class for all video generation providers.
+
+    Implementations:
+    - KlingProvider (ByteDance)
+    - RunwayProvider (Runway ML)
+    - LumaProvider (Luma AI)
+
+    Each provider must implement:
+    - generate_video: Submit a generation job
+    - estimate_cost: Estimate cost before generation
+    - check_status: Poll job status
+    - get_result: Retrieve completed video
+    """
+
+    provider_name: str = "base"
+    supported_modes: List[VideoGenerationMode] = []
+    max_duration_seconds: int = 60
+    min_duration_seconds: int = 1
+
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "",
+        timeout_seconds: int = 300,
+        max_retries: int = 3,
+        **kwargs
+    ):
+        self.api_key = api_key
+        self.base_url = base_url
+        self.timeout_seconds = timeout_seconds
+        self.max_retries = max_retries
+        self.extra_config = kwargs
+        self._health_status = ProviderHealthStatus.UNKNOWN
+
+    @property
+    def health_status(self) -> ProviderHealthStatus:
+        return self._health_status
+
+    @abstractmethod
+    async def generate_video(
+        self,
+        prompt: str,
+        duration: int = 10,
+        resolution: str = "720p",
+        image_url: Optional[str] = None,
+        **kwargs
+    ) -> VideoGenerationResult:
+        """
+        Submit a video generation job.
+
+        Args:
+            prompt: Text description of the video
+            duration: Duration in seconds
+            resolution: Output resolution (e.g., "720p", "1080p")
+            image_url: Optional source image for image-to-video
+            **kwargs: Provider-specific parameters
+
+        Returns:
+            VideoGenerationResult with job_id and initial status
+        """
+        pass
+
+    @abstractmethod
+    def estimate_cost(self, duration: int, resolution: str = "720p") -> float:
+        """
+        Estimate cost for video generation.
+
+        Args:
+            duration: Duration in seconds
+            resolution: Output resolution
+
+        Returns:
+            Estimated cost in USD
+        """
+        pass
+
+    @abstractmethod
+    async def check_status(self, job_id: str) -> str:
+        """
+        Check the status of a generation job.
+
+        Args:
+            job_id: Job identifier from generate_video()
+
+        Returns:
+            Status string: "pending", "processing", "completed", "failed"
+        """
+        pass
+
+    @abstractmethod
+    async def get_result(self, job_id: str) -> Optional[VideoGenerationResult]:
+        """
+        Retrieve the final result of a completed job.
+
+        Args:
+            job_id: Job identifier
+
+        Returns:
+            VideoGenerationResult with video_url if completed, None otherwise
+        """
+        pass
+
+    async def generate_and_wait(
+        self,
+        prompt: str,
+        duration: int = 10,
+        resolution: str = "720p",
+        image_url: Optional[str] = None,
+        poll_interval: int = 5,
+        max_wait: int = 600,
+        **kwargs
+    ) -> VideoGenerationResult:
+        """
+        Convenience method: submit job and poll until completion.
+
+        Args:
+            prompt: Text description
+            duration: Duration in seconds
+            resolution: Output resolution
+            image_url: Optional source image
+            poll_interval: Seconds between status checks
+            max_wait: Maximum seconds to wait
+            **kwargs: Provider-specific parameters
+
+        Returns:
+            VideoGenerationResult with video_url
+
+        Raises:
+            ProviderError: If job fails or times out
+        """
+        result = await self.generate_video(
+            prompt=prompt,
+            duration=duration,
+            resolution=resolution,
+            image_url=image_url,
+            **kwargs
+        )
+
+        job_id = result.job_id
+        elapsed = 0
+
+        while elapsed < max_wait:
+            await asyncio.sleep(poll_interval)
+            elapsed += poll_interval
+
+            status = await self.check_status(job_id)
+
+            if status == ProviderStatus.COMPLETED:
+                final = await self.get_result(job_id)
+                if final:
+                    return final
+                raise ProviderError(f"Job {job_id} completed but result retrieval failed")
+
+            if status == ProviderStatus.FAILED:
+                raise ProviderError(f"Job {job_id} failed during generation")
+
+        raise ProviderError(f"Job {job_id} timed out after {max_wait}s")
+
+    async def health_check(self) -> bool:
+        """Check provider health."""
+        try:
+            self._health_status = ProviderHealthStatus.HEALTHY
+            return True
+        except Exception:
+            self._health_status = ProviderHealthStatus.UNHEALTHY
+            return False
+
+    def _get_auth_headers(self) -> Dict[str, str]:
+        """Get authentication headers."""
+        return {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
