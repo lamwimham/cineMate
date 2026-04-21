@@ -4,10 +4,10 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-121%20passing-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-47%25-yellow.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-2007%20lines-brightgreen.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-77%25-yellow.svg)](tests/)
 
-**[🌐 中文文档](README_zh.md)** | **[📝 Sprint 1 Progress](docs/PMO/sprint_1_progress.md)**
+**[🌐 中文文档](README_zh.md)** | **[📝 Sprint 2 Progress](docs/PMO/sprint2_progress.md)** | **[✅ Sprint 1 Final Report](docs/PMO/sprint1_final_report.md)**
 
 ---
 
@@ -263,6 +263,10 @@ cineMate/
 │   ├── agents/                # Director Agent & Tools
 │   │   ├── director_agent.py  # ReActAgent implementation
 │   │   └── tools/             # Agent tools (EngineTools)
+│   ├── config/                # Configuration system (Sprint 2)
+│   │   ├── models.py          # Pydantic config models
+│   │   ├── defaults.yaml      # Default config
+│   │   └── loader.py          # Config loader
 │   ├── core/                  # Core data models & storage
 │   │   ├── models.py          # Pydantic models (Run, Node, Artifact)
 │   │   └── store.py           # SQLite storage layer
@@ -275,16 +279,17 @@ cineMate/
 │       ├── event_bus.py       # EventBus (Pub/Sub)
 │       ├── schemas.py         # Event schemas
 │       └── worker.py          # RQ workers
-├── tests/                     # Test suite
+├── tests/                     # Test suite (21 files, 2007 lines)
 │   ├── unit/                  # Unit tests
 │   │   ├── core/              # Store tests
-│   │   └── engine/            # DAG/FSM tests
+│   │   ├── engine/            # DAG/FSM tests
+│   │   └── infra/             # Queue/EventBus tests
 │   ├── integration/           # Integration tests
 │   └── conftest.py            # Pytest fixtures
 ├── docs/                      # Documentation
 │   ├── architecture.md        # System architecture
 │   ├── adr/                   # Architecture Decision Records
-│   └── PMO/                   # Project management
+│   └── PMO/                   # Project management (Sprint tracking)
 ├── prompts/                   # LLM prompts
 │   └── intent_v1.md           # Director Agent prompt
 ├── pyproject.toml             # Project config
@@ -320,8 +325,17 @@ pytest tests/unit/core/test_store.py -v
 | DAG | 42 | 100% | ✅ |
 | FSM | 42 | 97% | ✅ |
 | Store | 35 | 100% | ✅ |
-| Models | 2 | 100% | ✅ |
-| **Total** | **121** | **47%** | ✅ |
+| Worker | 9 | 100% | ✅ |
+| Queue Integration | 12 | 100% | ✅ |
+| EventBus | - | 77% | ✅ |
+| **Total** | **21 files, 2007 lines** | **77%** | ✅ |
+
+### CI/CD Status
+| Component | Status | Note |
+|-----------|--------|------|
+| GitHub Actions | ⏳ | Sprint 2 Day 1 |
+| pytest + coverage | ✅ | Ready |
+| Redis container | ⏳ | Sprint 2 Day 1 |
 
 ---
 
@@ -370,19 +384,34 @@ docs(adr): add Job Queue decision record
 
 ## 📋 Roadmap
 
-### Sprint 1 (Current) ✅
+### Sprint 1 (Completed) ✅
 - [x] Core Engine (DAG, FSM, Orchestrator)
 - [x] AgentScope Integration (DirectorAgent)
 - [x] Async Infrastructure (JobQueue, EventBus)
-- [x] Testing Framework (121 tests, 96% core coverage)
+- [x] Testing Framework (21 files, 2007 lines, 77% coverage)
+- [x] Event-Driven Orchestrator (node_completed trigger)
+- [x] Configuration System Skeleton (multi-model profiles)
 
-### Sprint 2 (Next)
-- [ ] Cloud Gateway (Auth, Billing, Proxy)
-- [ ] Skill System (Wong Kar-wai, Cyberpunk styles)
-- [ ] CI/CD Pipeline (GitHub Actions)
-- [ ] CLI Interface
+**Result**: ✅ **GO** - AgentScope + Engine integration validated
 
-### Sprint 3
+### Sprint 2 (Current) 🔄
+**Target**: Real Agent Call + Provider Integration + CI/CD
+
+| Day | Focus | Status |
+|-----|-------|--------|
+| Day 1 | P0 fixes (dependency injection + JobQueue) + CI/CD | ⏳ In Progress |
+| Day 2 | Config system + Real Agent call | ⏳ |
+| Day 3 | Provider adapter pattern | ⏳ |
+| Day 4 | Integration tests + Review | ⏳ |
+| Day 5 | Sprint Review Demo | ⏳ |
+
+**Day 1 Tasks**:
+- [ ] Fix 5 P0 issues (hermes) - dependency injection + JobQueue integration
+- [ ] Fix Issue #4 Mock Mode (hermes) - enable testing without API Key
+- [ ] CI/CD GitHub Actions (claude) - automated test pipeline
+- [ ] Interface alignment meeting (copaw + hermes) - JobQueue/EventBus APIs
+
+### Sprint 3 (Planned)
 - [ ] Web UI (Video Git visualization)
 - [ ] Multi-Provider Routing (Kling, Runway, etc.)
 - [ ] Production Hardening
