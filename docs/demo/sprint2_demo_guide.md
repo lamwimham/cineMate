@@ -178,7 +178,48 @@ python scripts/demo_sprint2.py --section text_to_video image_to_video mock
 
 ---
 
-## 4. 预期输出摘要
+## 4. 演示时间线
+
+| 步骤 | 内容 | 时长 | 说明 |
+|------|------|------|------|
+| 1 | Provider Factory | 1 min | 展示 Kling/Runway/Mock 继承关系 |
+| 2 | text_to_video | 2 min | 完整生成流程 (估算→提交→查询→结果) |
+| 3 | image_to_video | 1 min | 基于图像的自动生成 |
+| 4 | Worker + Provider | 2 min | JobType 路由逻辑 |
+| 5 | 配置系统 | 1 min | 多模型 Provider 配置展示 |
+| 6 | Q&A | 5 min | 预设问题与解答 |
+| **总计** | | **~12 min** | |
+
+---
+
+## 5. Q&A 预设问题
+
+### Q1: 为什么需要 Provider 抽象层？
+**A**: 不同的视频生成 API (Kling, Runway, Luma 等) 有不同的接口和参数。通过 `BaseVideoProvider` 抽象层，我们统一了调用接口。新增 Provider 只需实现 `generate_video`, `estimate_cost`, `check_status`, `get_result` 四个方法，Worker 路由逻辑无需修改。
+
+### Q2: Mock Provider 的作用是什么？
+**A**: 三个作用：
+1. **开发测试**: 无需 API Key 即可验证完整流程
+2. **CI 集成**: 在 CI/CD 环境中无需配置外部 API
+3. **演示准备**: Sprint Review 时不依赖网络和外部服务
+
+### Q3: Worker 是如何路由到对应 Provider 的？
+**A**: Worker 根据 `JobType` 枚举值进行路由。例如 `kling_text_to_video` 调用 `KlingProvider`，`runway_text_to_video` 调用 `RunwayProvider`。路由逻辑在 `worker.py` 的 `_execute_by_type()` 函数中实现。
+
+### Q4: 如果 Kling API 调用失败怎么办？
+**A**: 当前实现中，Worker 会通过 Redis 发布 `node_failed` 事件，Orchestrator 收到后触发重试或降级逻辑。配置系统中已定义 Fallback Provider (如 Kling → Luma)，可在运行时切换。
+
+### Q5: 配置系统如何管理 API Key？
+**A**: API Key 通过环境变量管理 (如 `KLING_API_KEY`, `RUNWAY_API_KEY`)。`defaults.yaml` 中定义了每个 Provider 对应的环境变量名。启动时可通过 `validate_api_keys()` 检查缺失的 Key。
+
+### Q6: 真实 API 调用和 Mock 调用有什么区别？
+**A**: 调用流程完全一致。区别在于：
+- **Mock**: 立即返回预设结果，零成本，用于测试/演示
+- **真实**: 调用外部 API，异步轮询直到完成，产生实际费用
+
+---
+
+## 6. 预期输出摘要
 
 完整运行应输出：
 
@@ -213,7 +254,7 @@ python scripts/demo_sprint2.py --section text_to_video image_to_video mock
 
 ---
 
-## 5. 常见问题
+## 7. 常见问题
 
 | 问题 | 解决方法 |
 |------|----------|
@@ -223,7 +264,7 @@ python scripts/demo_sprint2.py --section text_to_video image_to_video mock
 
 ---
 
-## 6. 相关文档
+## 8. 相关文档
 
 - [Provider 适配器 ADR](../adr/ADR-003_provider_adapter.md)
 - [Sprint 2 任务文档](../PMO/hermes_sprint2_day3_tasks.md)
