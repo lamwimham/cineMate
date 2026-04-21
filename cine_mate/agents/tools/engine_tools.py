@@ -6,6 +6,8 @@ Design Goals:
 1. Async-compatible (align with copaw's Async Infra).
 2. Simple interfaces for easy Agent parsing.
 3. Type-hinted for JSON schema generation.
+
+P0 Fix: Dependency injection for store + job_queue, JobQueue integration
 """
 
 import asyncio
@@ -17,18 +19,26 @@ from cine_mate.core.store import Store
 from cine_mate.core.models import PipelineRun, RunStatus
 from cine_mate.engine.dag import PipelineDAG
 from cine_mate.engine.orchestrator import Orchestrator
+from cine_mate.infra.schemas import JobType
 
 
 class EngineTools:
     """
     Manager class for CineMate Engine Tools.
     Maintains the Store instance and provides methods for the Agent.
+    
+    P0 Fix: Supports dependency injection for store and job_queue.
     """
 
-    def __init__(self, store_path: str = "./cinemate.db"):
-        self.store = Store(store_path)
-        # We assume a standard DAG config for the tool, 
-        # or pass it dynamically. For now, simple pipeline.
+    def __init__(
+        self,
+        store: Optional[Store] = None,
+        job_queue: Optional[Any] = None,  # JobQueue instance (circular import avoided)
+        store_path: str = "./cinemate.db"
+    ):
+        # P0 #2: Dependency injection
+        self.store = store or Store(store_path)
+        self.job_queue = job_queue  # P0 #3: JobQueue integration
         
     async def init_db(self):
         await self.store.init_db()
@@ -49,7 +59,7 @@ class EngineTools:
             style: Optional style/skill to apply (e.g., "wong-kar-wai").
             parent_run_id: If forking, the ID of the run to modify.
         """
-        run_id = f"run_{asyncio.get_event_loop().time():.0f}" # Simple ID generation for now
+        run_id = f"run_{asyncio.get_event_loop().time():.0f}"
         commit_msg = prompt
         
         run = PipelineRun(
@@ -58,16 +68,28 @@ class EngineTools:
             commit_msg=commit_msg,
             status=RunStatus.PENDING
         )
-        
-        # For MVP, we just record the request. Real execution is triggered by Orchestrator.
-        # In a real tool, we would call Orchestrator here.
         await self.store.create_run(run)
         
-        result = {
-            "run_id": run_id,
-            "status": "created",
-            "message": f"Pipeline {run_id} created successfully. Prompt queued."
-        }
+        # P0 #3: Use JobQueue to submit task if available
+        if self.job_queue:
+            job_id = await self.job_queue.submit_job(
+                run_id=run_id,
+                node_id="intent_parse",
+                job_type=JobType.TEXT_TO_VIDEO,
+                params={"prompt": prompt}
+            )
+            result = {
+                "run_id": run_id,
+                "job_id": job_id,
+                "status": "queued",
+                "message": f"Pipeline {run_id} submitted to queue."
+            }
+        else:
+            result = {
+                "run_id": run_id,
+                "status": "created",
+                "message": f"Pipeline {run_id} created successfully. Prompt queued."
+            }
         return ToolResponse(content=[{"type": "text", "text": json.dumps(result, indent=2)}])
 
     async def get_run_status(self, run_id: str) -> ToolResponse:
