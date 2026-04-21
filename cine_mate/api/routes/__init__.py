@@ -1,0 +1,1 @@
+"""CineMate API routes package."""
