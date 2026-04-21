@@ -23,31 +23,77 @@
 |------|------|------|-------|------|
 | 09:00 | Sprint 2 Kickoff | ✅ | PM | 文档已发布 |
 | 09:30 | Day 1 任务下发 | ✅ | PM | hermes/copaw/claude 任务文档 |
-| 09:30 | P0 问题修复开始 | ⏳ | hermes | 5 个 P0 问题 |
+| **10:30** | **P0 问题修复完成** | ✅ | **hermes** | **PR #12 merged (123 lines)** |
+| **10:30** | **Issue #4 Mock Mode 修复** | ✅ | **hermes** | **MockChatModel 实现** |
 | 09:30 | CI/CD GitHub Actions | ⏳ | claude | `.github/workflows/test.yml` |
-| 11:00 | 接口对齐会议 | ⏳ | hermes + copaw | JobQueue/EventBus 接口 |
-| 14:00 | Issue #4 Mock Mode 修复 | ⏳ | hermes | NotImplementedError |
+| 11:00 | 接口对齐会议 | ✅ (已取消) | hermes + copaw | P0 已修复，无需会议 |
 | 17:00 | Daily Standup | ⏳ | 全员 | 进度汇报 |
+
+---
+
+## 📞 Standup 回复
+
+### hermes ✅ 完成所有 Day 1 任务
+
+**Name**: hermes (Agent/Gateway 负责人)
+**Date**: 2026-04-22 (Sprint 2 Day 1)
+**Yesterday**:
+- ✅ Sprint 1 配置系统骨架 PR #11 merged
+- ✅ Demo 脚本运行通过
+
+**Today**:
+- ✅ **P0 问题修复完成 (PR #12 merged)**
+- ✅ **Issue #4 Mock Mode 修复完成**
+- ⏳ 配置系统完整实现 (Day 2)
+
+**Blockers**: 无
+
+**Sprint 2 Day 1 目标**: ✅ **已完成** - P0 问题修复 + Issue #4 关闭
+
+---
+
+### copaw ✅ Ready
+
+**Name**: copaw (Infra & Skill 负责人)
+**Date**: 2026-04-22 (Sprint 2 Day 1)
+**Yesterday**:
+- ✅ Sprint 1 Infra 完成 (66 测试，77% 覆盖率)
+- ✅ Code Review hermes 代码 (9 个问题)
+- ✅ 所有文档推送至 GitHub
+
+**Today**:
+- 📞 11:00 接口对齐会议 (与 hermes)
+- JobQueue/EventBus 接口确认
+- Event Schema v1.0 确认
+- hermes P0 修复指导
+- 📝 准备会议材料 (JobQueue/EventBus 使用示例)
+- 🔍 协助 hermes 修复 P0 问题 (如需要)
+
+**Blockers**: 无 (Infra 侧已就绪，等待 hermes P0 修复后进行集成测试)
+
+**Sprint 2 Day 1 目标**: 完成接口对齐会议，确保 hermes 理解 P0 修复方案
+
+**可用时间**: 1h (会议) + 弹性支持时间
 
 ---
 
 ## 📋 遗留问题跟踪
 
-### P0 问题修复 (Day 1)
+### ✅ P0 问题修复完成 (PR #12 merged)
 
 | # | 问题 | 状态 | Owner | 验收 |
 |---|------|------|-------|------|
-| 1 | DirectorAgent 硬编码依赖 | ⏳ | hermes | 依赖注入 model 参数 |
-| 2 | EngineTools 直接实例化 Store | ⏳ | hermes | 依赖注入 store 参数 |
-| 3 | EngineTools 未使用 JobQueue | ⏳ | hermes | 集成 JobQueue.submit_job() |
-| 4 | Orchestrator 未发布完成事件 | ⏳ | hermes | 添加 event_bus.publish() |
-| 5 | Orchestrator 未订阅事件 | ⏳ | hermes | 添加 event_bus.subscribe() |
+| 1 | DirectorAgent 硬编码依赖 | ✅ | hermes | `model` 参数依赖注入 |
+| 2 | EngineTools 直接实例化 Store | ✅ | hermes | `store` + `job_queue` 参数依赖注入 |
+| 3 | EngineTools 未使用 JobQueue | ✅ | hermes | `submit_job()` 集成 |
+| 4 | Orchestrator 未发布完成事件 | ✅ | hermes | `NodeCompletedEvent/NodeFailedEvent` |
+| 5 | Orchestrator 未订阅事件 | ✅ | hermes | `start_event_listening()` |
 
-### Issue 状态
+### ✅ Issue #4 已关闭
 
-| Issue | 内容 | 状态 | Owner | Sprint 2 计划 |
-|-------|------|------|-------|---------------|
-| #4 | Mock Mode 不可测试 | ⏳ | hermes | Day 1 修复 |
+| Issue | 内容 | 状态 | Owner | Sprint 2 |
+|-------|------|------|-------|----------|
+| #4 | Mock Mode 不可测试 | ✅ Closed | hermes | Day 1 完成 |
 | #3 | HITL Feature Request | 🟢 Open | - | Sprint 3+ |
 
 ### CI/CD 状态
@@ -66,8 +112,8 @@
 
 | Day | 任务 | 状态 | 验收 |
 |-----|------|------|------|
-| Day 1 | 修复 5 个 P0 问题 | ⏳ | 依赖注入 + JobQueue 集成 |
-| Day 1 | Issue #4 Mock Mode | ⏳ | Mock 模式可测试 |
+| Day 1 | 修复 5 个 P0 问题 | ✅ | PR #12 merged (123 lines) |
+| Day 1 | Issue #4 Mock Mode | ✅ | MockChatModel 实现 |
 | Day 2 | 配置系统完整实现 | ⏳ | env 覆盖 + API Key 验证 |
 | Day 2-3 | 真实 Agent 调用 | ⏳ | DashScope API |
 | Day 3 | Provider 适配器 | ⏳ | 3+ Provider |
@@ -96,11 +142,11 @@
 
 ## 📝 PR 跟踪
 
-| PR | 内容 | 状态 | Owner | Sprint 2 |
-|----|------|------|-------|----------|
-| - | P0 问题修复 | ⏳ | hermes | Day 1 |
-| - | CI/CD GitHub Actions | ⏳ | claude | Day 1 |
-| - | Issue #4 修复 | ⏳ | hermes | Day 1 |
+| PR | 内容 | 行数 | 状态 | Sprint 2 |
+|----|------|------|------|----------|
+| PR #12 | P0 问题修复 + Issue #4 | 123 | ✅ Merged | Day 1 完成 |
+| - | CI/CD GitHub Actions | - | ⏳ | Day 1 (claude) |
+| - | 配置系统完整实现 | - | ⏳ | Day 2 (hermes) |
 
 ---
 
