@@ -176,12 +176,19 @@ def _execute_by_type(job_type: str, params: Dict[str, Any]) -> Dict[str, Any]:
     """
     Execute job based on type.
     
-    This is where you'd call the actual upstream APIs.
-    For now, it's a placeholder that simulates execution.
+    Routes to the appropriate Provider or mock handler.
     """
     import time
-    time.sleep(2)  # Simulate API call delay
     
+    # Provider-based video generation
+    if job_type in ("kling_text_to_video", "kling_image_to_video"):
+        return _execute_kling(job_type, params)
+    elif job_type == "runway_text_to_video":
+        return _execute_runway(params)
+    elif job_type in ("mock_text_to_video", "mock_image_to_video"):
+        return _execute_mock(job_type, params)
+    
+    # Legacy handlers
     if job_type == "text_to_image":
         return _text_to_image(params)
     elif job_type == "image_to_video":
@@ -259,6 +266,103 @@ def _video_edit(params: Dict[str, Any]) -> Dict[str, Any]:
         "output_url": "https://example.com/edited_video.mp4",
         "operation": operation,
         "cost": 0.5,
+    }
+
+
+# =============================================================================
+# Provider-based execution functions (Sprint 2 Day 3)
+# =============================================================================
+
+def _execute_kling(job_type: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute Kling video generation job (sync wrapper for async provider)."""
+    import asyncio
+    from cine_mate.adapters.kling_provider import KlingProvider
+    
+    prompt = params.get("prompt", "")
+    duration = params.get("duration", 10)
+    resolution = params.get("resolution", "720p")
+    image_url = params.get("image_url")
+    
+    print(f"[Worker] Kling {job_type}: prompt='{prompt[:50]}...', duration={duration}s")
+    
+    provider = KlingProvider()
+    result = asyncio.run(provider.generate_and_wait(
+        prompt=prompt,
+        duration=duration,
+        resolution=resolution,
+        image_url=image_url,
+        poll_interval=5,
+        max_wait=params.get("max_wait", 300),
+    ))
+    
+    return {
+        "artifact_hash": f"kling_{result.job_id}",
+        "output_url": result.video_url,
+        "thumbnail_url": result.thumbnail_url,
+        "duration": result.duration,
+        "cost": result.cost,
+        "provider": "kling",
+        "job_id": result.job_id,
+    }
+
+
+def _execute_runway(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute Runway video generation job (sync wrapper for async provider)."""
+    import asyncio
+    from cine_mate.adapters.runway_provider import RunwayProvider
+    
+    prompt = params.get("prompt", "")
+    duration = params.get("duration", 10)
+    resolution = params.get("resolution", "720p")
+    
+    print(f"[Worker] Runway text_to_video: prompt='{prompt[:50]}...', duration={duration}s")
+    
+    provider = RunwayProvider()
+    result = asyncio.run(provider.generate_and_wait(
+        prompt=prompt,
+        duration=duration,
+        resolution=resolution,
+        poll_interval=5,
+        max_wait=params.get("max_wait", 300),
+    ))
+    
+    return {
+        "artifact_hash": f"runway_{result.job_id}",
+        "output_url": result.video_url,
+        "thumbnail_url": result.thumbnail_url,
+        "duration": result.duration,
+        "cost": result.cost,
+        "provider": "runway",
+        "job_id": result.job_id,
+    }
+
+
+def _execute_mock(job_type: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute Mock video generation job (for testing without API keys)."""
+    import asyncio
+    from cine_mate.adapters.mock_provider import MockVideoProvider
+    
+    prompt = params.get("prompt", "")
+    duration = params.get("duration", 10)
+    resolution = params.get("resolution", "720p")
+    
+    print(f"[Worker] Mock {job_type}: prompt='{prompt[:50]}...', duration={duration}s")
+    
+    provider = MockVideoProvider(simulate_delay=True, delay_seconds=2)
+    result = asyncio.run(provider.generate_and_wait(
+        prompt=prompt,
+        duration=duration,
+        resolution=resolution,
+    ))
+    
+    return {
+        "artifact_hash": f"mock_{result.job_id}",
+        "output_url": result.video_url,
+        "thumbnail_url": result.thumbnail_url,
+        "duration": result.duration,
+        "cost": 0.0,
+        "provider": "mock",
+        "job_id": result.job_id,
     }
 
 

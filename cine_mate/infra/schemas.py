@@ -94,6 +94,12 @@ class JobType(str, Enum):
     TEXT_TO_VIDEO = "text_to_video"
     TTS = "tts"
     VIDEO_EDIT = "video_edit"
+    # Provider-specific job types (Sprint 2 Day 3)
+    KLING_TEXT_TO_VIDEO = "kling_text_to_video"
+    KLING_IMAGE_TO_VIDEO = "kling_image_to_video"
+    RUNWAY_TEXT_TO_VIDEO = "runway_text_to_video"
+    MOCK_TEXT_TO_VIDEO = "mock_text_to_video"
+    MOCK_IMAGE_TO_VIDEO = "mock_image_to_video"
 
 
 class Job(BaseModel):
