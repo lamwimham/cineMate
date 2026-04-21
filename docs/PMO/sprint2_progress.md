@@ -1,8 +1,8 @@
 # Sprint 2 Progress Tracker
 
 > **Sprint**: 2 (2026-04-22 ~ 2026-04-28)
-> **目标**: 真实 Agent 调用 + Provider 集成 + CI/CD
-> **更新日期**: 2026-04-23 (Day 2)
+> **目标**: 真实 Agent 调用 + Provider 集成 + CI/CD + 测试覆盖率
+> **更新日期**: 2026-04-24 (Day 3)
 
 ---
 
@@ -10,14 +10,43 @@
 
 | 目标 | 状态 | 备注 |
 |------|------|------|
-| 真实 Agent 调用 | ⏳ | Day 2-3 |
-| Provider 适配器 | ⏳ | Day 3-4 |
-| CI/CD GitHub Actions | ⏳ | Day 1 |
-| 测试覆盖率 >90% | ⏳ | Day 2 |
+| 真实 Agent 调用 | ✅ | Day 2 完成 (PR #15) |
+| Provider 适配器 | ⏳ | Day 3 进行中 |
+| CI/CD GitHub Actions | ✅ | Day 1 完成 (PR #13) |
+| 测试覆盖率 >90% | ✅ | Day 2 完成 (PR #14) |
 
 ---
 
-## 📅 Day 2 进度 (2026-04-23)
+## 📅 Day 3 进度 (2026-04-24)
+
+| 时间 | 事项 | 状态 | Owner | 备注 |
+|------|------|------|-------|------|
+| 09:00 | Day 3 任务下发 | ✅ | PM | hermes/copaw/claude 任务文档 |
+| 09:30 | BaseVideoProvider 基类实现 | ⏳ | copaw | P0 |
+| 09:30 | Kling Provider 实现 | ⏳ | hermes | P0 |
+| 10:30 | Provider ADR 文档 | ⏳ | copaw | P0 |
+| 11:00 | Provider 与 JobQueue 集成 | ⏳ | hermes | P0 |
+| 14:00 | Runway Provider 实现 | ⏳ | hermes | P1 |
+| 14:00 | Provider 单元测试 | ⏳ | claude | P1 |
+| 15:00 | Provider 工厂函数 | ⏳ | copaw | P1 |
+| 16:00 | 验证协作会议 | ⏳ | hermes + copaw | 接口验证 |
+| 17:00 | Daily Standup | ⏳ | 全员 | 进度汇报 |
+
+---
+
+## 📊 Day 3 目标
+
+**核心目标**: Provider 适配器实现 + 测试覆盖
+
+| 成员 | 任务 | 预估工时 | 优先级 |
+|------|------|----------|--------|
+| **hermes** | Kling Provider + JobQueue 集成 + Runway | 6h | P0-P1 |
+| **copaw** | ADR-003 + BaseVideoProvider + factory | 3h | P0-P1 |
+| **claude** | Provider 单元测试 + Mock + 集成测试 | 4h | P1 |
+
+---
+
+## 📅 Day 2 进度 (2026-04-23) - 已完成 ✅
 
 | 时间 | 事项 | 状态 | Owner | 备注 |
 |------|------|------|-------|------|
