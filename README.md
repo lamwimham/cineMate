@@ -7,6 +7,8 @@
 [![Tests](https://img.shields.io/badge/tests-121%20passing-brightgreen.svg)](tests/)
 [![Coverage](https://img.shields.io/badge/coverage-47%25-yellow.svg)](tests/)
 
+**[🌐 中文文档](README_zh.md)** | **[📝 Sprint 1 Progress](docs/PMO/sprint_1_progress.md)**
+
 ---
 
 ## 🎯 Vision
