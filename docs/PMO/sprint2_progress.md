@@ -17,6 +17,19 @@
 
 ---
 
+## 📅 Day 2 进度 (2026-04-23)
+
+| 时间 | 事项 | 状态 | Owner | 备注 |
+|------|------|------|-------|------|
+| 09:00 | Day 2 任务下发 | ✅ | PM | hermes/copaw/claude 任务文档 |
+| 09:00 | 配置系统完整实现开始 | ⏳ | hermes | env 覆盖 + API Key 验证 |
+| 09:00 | 测试覆盖率提升开始 | ⏳ | claude | >90% 目标 |
+| 09:00 | Provider 适配器调研开始 | ⏳ | copaw | Kling/Runway/Luma API |
+| 11:00 | Infra 集成测试验证 | ⏳ | copaw | JobQueue/EventBus 集成 |
+| 17:00 | Daily Standup | ⏳ | 全员 | 进度汇报 |
+
+---
+
 ## 📅 Day 1 进度 (2026-04-22)
 
 | 时间 | 事项 | 状态 | Owner | 备注 |
@@ -45,46 +58,43 @@
 
 ## 📞 Standup 回复
 
-### hermes ✅ 完成所有 Day 1 任务
+### hermes ✅ Day 2 Ready
 
 **Name**: hermes (Agent/Gateway 负责人)
-**Date**: 2026-04-22 (Sprint 2 Day 1)
+**Date**: 2026-04-23 (Sprint 2 Day 2)
 **Yesterday**:
-- ✅ Sprint 1 配置系统骨架 PR #11 merged
-- ✅ Demo 脚本运行通过
+- ✅ PR #12 已合并 (5 个 P0 问题修复 + Issue #4 Mock Mode)
+- ✅ 配置系统骨架 PR #11 已合并
 
 **Today**:
-- ✅ **P0 问题修复完成 (PR #12 merged)**
-- ✅ **Issue #4 Mock Mode 修复完成**
-- ⏳ 配置系统完整实现 (Day 2)
+- ⏳ 配置系统完整实现 (环境变量覆盖 + API Key 验证) - 4h
+- ⏳ 真实 Agent 调用集成 (DashScope API) - 6h
 
 **Blockers**: 无
 
-**Sprint 2 Day 1 目标**: ✅ **已完成** - P0 问题修复 + Issue #4 关闭
+**状态**: 已拉取最新代码，开始执行 Day 2 任务
 
 ---
 
-### claude ✅ 完成所有 Day 1 任务
+### claude ⏳ 等待回复
 
 **Name**: claude (QA/Testing 负责人)
-**Date**: 2026-04-22 (Sprint 2 Day 1)
+**Date**: 2026-04-23 (Sprint 2 Day 2)
 **Yesterday**:
-- ✅ Sprint 1 测试报告完成 (21 files, 2007 lines)
+- ✅ CI/CD GitHub Actions PR #13 merged (109 lines)
 
 **Today**:
-- ✅ **CI/CD GitHub Actions 完成 (PR #13 merged)**
-- ⏳ 测试覆盖率提升 (>90%) (Day 2)
+- ⏳ 测试覆盖率提升 (>90%)
+- ⏳ 配置系统测试
 
-**Blockers**: 无
-
-**Sprint 2 Day 1 目标**: ✅ **已完成** - CI/CD GitHub Actions 配置
+**Blockers**: [等待回复]
 
 ---
 
-### copaw ✅ Ready
+### copaw ✅ Day 2 Ready
 
 **Name**: copaw (Infra & Skill 负责人)
-**Date**: 2026-04-22 (Sprint 2 Day 1)
+**Date**: 2026-04-23 (Sprint 2 Day 2)
 **Yesterday**:
 - ✅ Sprint 1 Infra 完成 (66 测试，77% 覆盖率)
 - ✅ Code Review hermes 代码 (9 个问题)
@@ -103,6 +113,38 @@
 **Sprint 2 Day 1 目标**: 完成接口对齐会议，确保 hermes 理解 P0 修复方案
 
 **可用时间**: 1h (会议) + 弹性支持时间
+
+---
+
+### copaw ✅ Day 2 Ready
+
+**Name**: copaw (Infra & Skill 负责人)
+**Date**: 2026-04-23 (Sprint 2 Day 2)
+**Yesterday**:
+- ✅ Sprint 2 Day 1 接口对齐会议完成 (已取消，P0 已修复)
+- ✅ hermes P0 修复验收完成
+- ⏳ Sprint 1 遗留文档更新 (README + docs) 待完成
+
+**Today**:
+- 🔍 Provider 适配器调研 (2h, P2)
+  - Kling API 文档分析
+  - Runway API 文档分析
+  - Luma API 文档分析
+  - 输出适配器设计建议
+- 🧪 Infra 集成测试验证 (1h, P2)
+  - JobQueue/EngineTools 集成验证
+  - EventBus 端到端测试
+  - 验证 hermes P0 修复后的集成
+
+**Blockers**: 无 (等待 hermes 配置系统完成后进行集成测试)
+
+**今日时间安排**:
+| 时间 | 任务 | 交付物 |
+|------|------|--------|
+| 09:00-11:00 | Provider 适配器调研 | API 对比文档 |
+| 11:00-12:00 | Infra 集成测试 | 测试报告 |
+| 14:00-17:00 | 弹性支持 | - |
+| 17:00 | Daily Standup | 汇报 |
 
 ---
 
