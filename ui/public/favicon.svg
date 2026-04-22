@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <!-- 背景渐变：深黑到暗蓝 -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#050508"/>
+    </radialGradient>
+
+    <!-- 主光束：暖金到透明 -->
+    <linearGradient id="beamGrad" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#f5c542" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#f5a623" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- 辅助光束：冷白 -->
+    <linearGradient id="beamCold" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#e8e4d9" stop-opacity="0.7"/>
+      <stop offset="50%" stop-color="#d4d0c4" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#f5f0e8" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- 镜头光晕 -->
+    <radialGradient id="lensGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5c542" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#f5a623" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 外发光 -->
+    <radialGradient id="outerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5c542" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 光束模糊 -->
+    <filter id="beamBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+
+    <!-- 柔和光晕 -->
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5"/>
+    </filter>
+
+    <!-- 胶片颗粒纹理 -->
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend in="SourceGraphic" in2="grain" mode="overlay" result="blend"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.06"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- 光束裁剪 -->
+    <clipPath id="beamClip">
+      <polygon points="28,52 36,52 42,12 22,12"/>
+    </clipPath>
+
+    <!-- 光圈蒙版 -->
+    <clipPath id="lensClip">
+      <circle cx="32" cy="42" r="12"/>
+    </clipPath>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="64" height="64" rx="12" fill="url(#bgGrad)"/>
+
+  <!-- 外发光 -->
+  <circle cx="32" cy="32" r="28" fill="url(#outerGlow)"/>
+
+  <!-- ===== 光束组 ===== -->
+  <g clip-path="url(#beamClip)">
+    <!-- 主光束（暖金） -->
+    <rect x="20" y="10" width="24" height="44" fill="url(#beamGrad)" filter="url(#beamBlur)" opacity="0.85"/>
+
+    <!-- 辅助光束（冷白） -->
+    <rect x="26" y="10" width="12" height="44" fill="url(#beamCold)" opacity="0.5"/>
+
+    <!-- 光束核心（高亮） -->
+    <rect x="30" y="10" width="4" height="44" fill="#fff8e7" opacity="0.6" filter="url(#softGlow)"/>
+
+    <!-- 漂浮尘埃粒子 -->
+    <circle cx="31" cy="28" r="0.4" fill="#f5f0e8" opacity="0.7"/>
+    <circle cx="33" cy="32" r="0.3" fill="#f5f0e8" opacity="0.5"/>
+    <circle cx="29" cy="38" r="0.35" fill="#f5f0e8" opacity="0.6"/>
+    <circle cx="34" cy="25" r="0.25" fill="#f5f0e8" opacity="0.4"/>
+    <circle cx="30" cy="20" r="0.3" fill="#f5f0e8" opacity="0.5"/>
+    <circle cx="32" cy="42" r="0.4" fill="#f5f0e8" opacity="0.65"/>
+    <circle cx="35" cy="36" r="0.25" fill="#f5f0e8" opacity="0.45"/>
+  </g>
+
+  <!-- 光束边缘柔化 -->
+  <polygon points="28,52 36,52 42,12 22,12" fill="none" stroke="#f5c542" stroke-width="0.5" opacity="0.3" filter="url(#softGlow)"/>
+
+  <!-- ===== 镜头光圈 ===== -->
+  <g clip-path="url(#lensClip)">
+    <!-- 光圈叶片 1 -->
+    <path d="M20 42 Q32 30 44 42 Q32 54 20 42Z" fill="#2a2a3e" opacity="0.9"/>
+    <path d="M20 42 Q32 30 44 42" stroke="#f5c542" stroke-width="0.8" opacity="0.4"/>
+
+    <!-- 光圈叶片 2（旋转 60°） -->
+    <g transform="rotate(60 32 42)">
+      <path d="M20 42 Q32 30 44 42 Q32 54 20 42Z" fill="#2a2a3e" opacity="0.85"/>
+      <path d="M20 42 Q32 30 44 42" stroke="#f5c542" stroke-width="0.6" opacity="0.3"/>
+    </g>
+
+    <!-- 光圈叶片 3（旋转 120°） -->
+    <g transform="rotate(120 32 42)">
+      <path d="M20 42 Q32 30 44 42 Q32 54 20 42Z" fill="#2a2a3e" opacity="0.85"/>
+      <path d="M20 42 Q32 30 44 42" stroke="#f5c542" stroke-width="0.6" opacity="0.3"/>
+    </g>
+  </g>
+
+  <!-- 光圈外环 -->
+  <circle cx="32" cy="42" r="11" stroke="#3a3a5e" stroke-width="1.5" fill="none"/>
+  <circle cx="32" cy="42" r="10" stroke="#4a4a6e" stroke-width="0.5" fill="none" opacity="0.6"/>
+
+  <!-- 镜头中心光晕 -->
+  <circle cx="32" cy="42" r="8" fill="url(#lensGlow)"/>
+  <circle cx="32" cy="42" r="3" fill="#f5c542" opacity="0.85"/>
+  <circle cx="32" cy="42" r="1.5" fill="#fff8e7" opacity="0.95"/>
+
+  <!-- 镜头高光反射 -->
+  <ellipse cx="30" cy="40" rx="2" ry="1" fill="white" opacity="0.3" transform="rotate(-20 30 40)"/>
+
+  <!-- C 字母（CineMate） -->
+  <path d="M36 38 Q34 36 32 36 Q28 36 28 40 Q28 44 32 44 Q34 44 36 42" 
+        stroke="#f5c542" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.75"/>
+
+  <!-- 底部装饰：胶片齿孔 -->
+  <g opacity="0.35">
+    <circle cx="26" cy="56" r="1" fill="#4a4a6e"/>
+    <circle cx="32" cy="56" r="1" fill="#4a4a6e"/>
+    <circle cx="38" cy="56" r="1" fill="#4a4a6e"/>
+  </g>
+
+  <!-- 胶片颗粒覆盖（极低透明度） -->
+  <rect width="64" height="64" rx="12" filter="url(#grain)" opacity="0.06"/>
+</svg>

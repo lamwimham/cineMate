@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- 背景暗色 -->
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#050508"/>
+    </radialGradient>
+
+    <!-- 光束 - 中心最亮，边缘晕开 -->
+    <radialGradient id="beamCore" cx="50%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#f5c542" stop-opacity="0.9"/>
+      <stop offset="30%" stop-color="#f5a623" stop-opacity="0.6"/>
+      <stop offset="70%" stop-color="#f59e0b" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 光束向上扩散 -->
+    <linearGradient id="beamRise" x1="50%" y1="100%" x2="50%" y2="20%">
+      <stop offset="0%" stop-color="#f5c542" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#f5a623" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- 辅助光晕（冷白） -->
+    <radialGradient id="coldHaze" cx="50%" cy="75%" r="50%">
+      <stop offset="0%" stop-color="#e8e4d9" stop-opacity="0.4"/>
+      <stop offset="60%" stop-color="#d4d0c4" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#f5f0e8" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 镜头光晕 -->
+    <radialGradient id="lensHaze" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5c542" stop-opacity="0.7"/>
+      <stop offset="35%" stop-color="#f5a623" stop-opacity="0.3"/>
+      <stop offset="70%" stop-color="#e8e4d9" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- C 字母光晕 -->
+    <radialGradient id="letterHaze" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5c542" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#f5a623" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 外圈光晕 -->
+    <radialGradient id="outerHaze" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5c542" stop-opacity="0.12"/>
+      <stop offset="50%" stop-color="#f5a623" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 高斯模糊 - 核心晕染效果 -->
+    <filter id="heavyBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+    <filter id="mediumBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <filter id="lightBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+
+    <!-- 光束裁剪：下宽上窄 -->
+    <clipPath id="beamClip">
+      <polygon points="220,420 292,420 320,100 192,100"/>
+    </clipPath>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <!-- 外圈光晕 -->
+  <circle cx="256" cy="256" r="180" fill="url(#outerHaze)" filter="url(#heavyBlur)"/>
+
+  <!-- ===== 光束 ===== -->
+  <g clip-path="url(#beamClip)">
+    <!-- 底层光束（重度模糊晕染） -->
+    <rect x="160" y="80" width="192" height="360" fill="url(#beamRise)" filter="url(#heavyBlur)" opacity="0.7"/>
+
+    <!-- 中层光束 -->
+    <rect x="200" y="80" width="112" height="360" fill="url(#beamRise)" filter="url(#mediumBlur)" opacity="0.5"/>
+
+    <!-- 冷白辅助光晕 -->
+    <rect x="220" y="80" width="72" height="360" fill="url(#coldHaze)" filter="url(#lightBlur)" opacity="0.4"/>
+
+    <!-- 光束核心（白色高光） -->
+    <rect x="244" y="80" width="24" height="360" fill="#fff8e7" opacity="0.35" filter="url(#mediumBlur)"/>
+
+    <!-- 漂浮粒子（晕染小点） -->
+    <circle cx="248" cy="220" r="4" fill="#f5f0e8" opacity="0.6" filter="url(#lightBlur)"/>
+    <circle cx="268" cy="250" r="3" fill="#f5f0e8" opacity="0.4" filter="url(#lightBlur)"/>
+    <circle cx="240" cy="290" r="3.5" fill="#f5f0e8" opacity="0.5" filter="url(#lightBlur)"/>
+    <circle cx="276" cy="190" r="2.5" fill="#f5f0e8" opacity="0.35" filter="url(#lightBlur)"/>
+    <circle cx="244" cy="160" r="3" fill="#f5f0e8" opacity="0.45" filter="url(#lightBlur)"/>
+    <circle cx="260" cy="340" r="4" fill="#f5f0e8" opacity="0.55" filter="url(#lightBlur)"/>
+    <circle cx="284" cy="280" r="2.5" fill="#f5f0e8" opacity="0.4" filter="url(#lightBlur)"/>
+  </g>
+
+  <!-- ===== 镜头（完全晕染，无清晰线条） ===== -->
+  <!-- 镜头外圈光晕 -->
+  <circle cx="256" cy="340" r="100" fill="none" stroke="#3a3a5e" stroke-width="40" opacity="0.15" filter="url(#heavyBlur)"/>
+
+  <!-- 镜头主体光晕 -->
+  <circle cx="256" cy="340" r="75" fill="url(#lensHaze)" filter="url(#heavyBlur)" opacity="0.8"/>
+
+  <!-- 镜头中心亮光 -->
+  <circle cx="256" cy="340" r="40" fill="#f5c542" opacity="0.5" filter="url(#mediumBlur)"/>
+
+  <!-- 镜头核心高光 -->
+  <circle cx="256" cy="340" r="18" fill="#fff8e7" opacity="0.7" filter="url(#lightBlur)"/>
+
+  <!-- 镜头最核心（小亮点） -->
+  <circle cx="256" cy="340" r="6" fill="#fff8e7" opacity="0.9"/>
+
+  <!-- 镜头高光反射 -->
+  <ellipse cx="242" cy="328" rx="12" ry="6" fill="white" opacity="0.25" transform="rotate(-20 242 328)" filter="url(#lightBlur)"/>
+
+  <!-- ===== C 字母（晕染光斑，无清晰线条） ===== -->
+  <circle cx="256" cy="340" r="45" fill="url(#letterHaze)" filter="url(#mediumBlur)" opacity="0.4"/>
+
+  <!-- ===== 底部胶片齿孔（微弱光点） ===== -->
+  <circle cx="208" cy="445" r="6" fill="#4a4a6e" opacity="0.2" filter="url(#lightBlur)"/>
+  <circle cx="256" cy="445" r="6" fill="#4a4a6e" opacity="0.2" filter="url(#lightBlur)"/>
+  <circle cx="304" cy="445" r="6" fill="#4a4a6e" opacity="0.2" filter="url(#lightBlur)"/>
+</svg>
