@@ -81,20 +81,20 @@ class TestRunwayRealAPI:
         
         # Validate result
         assert result is not None, "Result should not be None"
-        assert result.success is True, f"Generation should succeed, got error: {result.error_message}"
+        assert result.is_completed is True, f"Generation should succeed, got error: {result.error_message}"
         assert result.video_url is not None, "Result should contain video URL"
         assert result.video_url.startswith("http"), f"Video URL should be valid HTTP URL, got: {result.video_url}"
         
         # Validate metadata
         assert result.provider == "runway", f"Provider should be 'runway', got: {result.provider}"
-        assert result.model is not None, "Model should be specified"
-        assert result.duration > 0, "Duration should be positive"
-        assert result.cost_usd > 0, "Cost should be positive for real API calls"
+        assert result.metadata.get("model") is not None, "Model should be specified in metadata"
+        assert result.duration_seconds > 0, "Duration should be positive"
+        assert result.cost > 0, "Cost should be positive for real API calls"
         
         print(f"\n✅ Runway text-to-video successful!")
         print(f"   Video URL: {result.video_url}")
-        print(f"   Duration: {result.duration}s")
-        print(f"   Cost: ${result.cost_usd:.4f}")
+        print(f"   Duration: {result.duration_seconds}s")
+        print(f"   Cost: ${result.cost:.4f}")
     
     @pytest.mark.asyncio
     async def test_runway_api_key_validation(self):
@@ -160,12 +160,12 @@ class TestRunwayRealAPI:
             )
             
             assert result is not None
-            assert result.success is True
+            assert result.is_completed is True
             assert result.resolution == resolution
             
             print(f"\n✅ Runway {resolution} test passed!")
             print(f"   Video URL: {result.video_url}")
-            print(f"   Cost: ${result.cost_usd:.4f}")
+            print(f"   Cost: ${result.cost:.4f}")
 
 
 class TestRunwayRealAPIWithCallback:
@@ -236,11 +236,11 @@ async def manual_runway_test():
             resolution="720p"
         )
         
-        if result.success:
+        if result.is_completed:
             print(f"✅ SUCCESS!")
             print(f"   Video URL: {result.video_url}")
-            print(f"   Duration: {result.duration}s")
-            print(f"   Cost: ${result.cost_usd:.4f}")
+            print(f"   Duration: {result.duration_seconds}s")
+            print(f"   Cost: ${result.cost:.4f}")
         else:
             print(f"❌ FAILED: {result.error_message}")
     

@@ -88,20 +88,20 @@ class TestKlingRealAPI:
         
         # Validate result
         assert result is not None, "Result should not be None"
-        assert result.success is True, f"Generation should succeed, got error: {result.error_message}"
+        assert result.is_completed is True, f"Generation should succeed, got error: {result.error_message}"
         assert result.video_url is not None, "Result should contain video URL"
         assert result.video_url.startswith("http"), f"Video URL should be valid HTTP URL, got: {result.video_url}"
         
         # Validate metadata
         assert result.provider == "kling", f"Provider should be 'kling', got: {result.provider}"
-        assert result.model is not None, "Model should be specified"
-        assert result.duration > 0, "Duration should be positive"
-        assert result.cost_usd > 0, "Cost should be positive for real API calls"
+        assert result.metadata.get("model") is not None, "Model should be specified in metadata"
+        assert result.duration_seconds > 0, "Duration should be positive"
+        assert result.cost > 0, "Cost should be positive for real API calls"
         
         print(f"\n✅ Kling text-to-video successful!")
         print(f"   Video URL: {result.video_url}")
-        print(f"   Duration: {result.duration}s")
-        print(f"   Cost: ${result.cost_usd:.4f}")
+        print(f"   Duration: {result.duration_seconds}s")
+        print(f"   Cost: ${result.cost:.4f}")
     
     @pytest.mark.asyncio
     async def test_kling_image_to_video_real(
@@ -130,17 +130,17 @@ class TestKlingRealAPI:
         
         # Validate result
         assert result is not None, "Result should not be None"
-        assert result.success is True, f"Generation should succeed, got error: {result.error_message}"
+        assert result.is_completed is True, f"Generation should succeed, got error: {result.error_message}"
         assert result.video_url is not None, "Result should contain video URL"
         assert result.video_url.startswith("http"), f"Video URL should be valid HTTP URL, got: {result.video_url}"
         
-        # Validate mode
-        assert result.mode == "image_to_video", f"Mode should be 'image_to_video', got: {result.mode}"
+        # Validate mode from metadata
+        assert result.metadata.get("mode") == "image_to_video", f"Mode should be 'image_to_video', got: {result.metadata.get('mode')}"
         
         print(f"\n✅ Kling image-to-video successful!")
         print(f"   Video URL: {result.video_url}")
-        print(f"   Duration: {result.duration}s")
-        print(f"   Cost: ${result.cost_usd:.4f}")
+        print(f"   Duration: {result.duration_seconds}s")
+        print(f"   Cost: ${result.cost:.4f}")
     
     @pytest.mark.asyncio
     async def test_kling_api_key_validation(self):
@@ -252,11 +252,11 @@ async def manual_kling_test():
             resolution="720p"
         )
         
-        if result.success:
+        if result.is_completed:
             print(f"✅ SUCCESS!")
             print(f"   Video URL: {result.video_url}")
-            print(f"   Duration: {result.duration}s")
-            print(f"   Cost: ${result.cost_usd:.4f}")
+            print(f"   Duration: {result.duration_seconds}s")
+            print(f"   Cost: ${result.cost:.4f}")
         else:
             print(f"❌ FAILED: {result.error_message}")
     
